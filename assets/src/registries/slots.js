@@ -84,11 +84,11 @@ Registry.slots.add("ap4", {
       upgrades: [
         "tiny-shooter",
         "double-shooter",
-        "laser-blaster",
-        "accelerator",
-        "greenbeam",
-        "purple-destroyer",
-        "ultraviolet-obliterator",
+        "incendiary",
+        "flamethrower",
+        "dragons-breath",
+        "chemists-wrath",
+        "sublimation"
       ],
     },
     2: {
@@ -137,5 +137,5 @@ Registry.slots.add("booster", {
 });
 
 Registry.slots.add("sp1", {
-  upgrades: ["deflector", "shield-projector", "protector", "super-shield", "spike-shield"],
+  upgrades: ["deflector", "shield-projector", "protector", "super-shield"]//, "spike-shield"],
 });

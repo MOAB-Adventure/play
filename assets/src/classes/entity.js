@@ -12,13 +12,7 @@ class Entity {
   world = null;
   resistances = [];
   //How the entity will be drawn
-  drawer = {
-    shape: "circle",
-    fill: "red",
-    image: "error",
-    width: 100,
-    height: 100,
-  };
+  drawer = { shape: "circle", fill: "red", image: "error", width: 100, height: 100 };
   hitSize = 100;
   speed = 10;
   team = "enemy";
@@ -32,10 +26,7 @@ class Entity {
   //Stats
   damageDealt = 0;
   damageTaken = 0;
-  destroyed = {
-    boxes: 0,
-    bosses: 0,
-  };
+  destroyed = { boxes: 0, bosses: 0 };
   lastHurtSource = null;
   dv = 0;
 
@@ -44,7 +35,8 @@ class Entity {
   effectiveHealthMult = 1;
   effectiveResistanceMult = 1;
   effectiveSpeedMult = 1;
-  statuses = [];
+  /** @type {Object<string, number>} */
+  statuses = {};
 
   //Sounds
   hitSound = null;
@@ -85,23 +77,30 @@ class Entity {
     // console.log(this.name, calcAmount === 0 ? "immune" : "not immune", "to", type)
     return calcAmount === 0;
   }
-  shield(strength = 200, spawnTime = 15, options = {}) {
-    if (this._shield) {
+  burstShield(deflections = 1) {
+    repeat(deflections, (i) => {
       // make transparent deflection from old shield
       let bulletToFire = bullet({
         type: "deflect",
-        lifetime: this._shield.maxLife,
-        hitSize: this._shield.hitSize,
+        lifetime: Math.min(this._shield.maxLife * 1.5, 60),
+        hitSize: this._shield.hitSize / 2,
         colour: [0, 0, 0, 0],
         colourTo: [0, 0, 0, 0],
         trailColour: this._shield.trailColourTo,
         trailColourTo: this._shield.trailColour,
+        growth: 25 + 10 * i,
+        falloff: 0.025 * (deflections - i),
       });
       bulletToFire.entity = this;
       bulletToFire.world = this.world;
       this.world.bullets.push(bulletToFire);
-      // is mine
-      this._shield.remove = true;
+    });
+    // delete old shield
+    this._shield.remove = true;
+  }
+  shield(strength = 200, spawnTime = 15, options = {}, deflections = 1) {
+    if (this._shield) {
+      this.burstShield(deflections);
     }
 
     // create shield
@@ -210,23 +209,24 @@ class Entity {
       }
     }
     //visual effect because cool
-    this.world.particles.push(
-      new AfterImageParticle(
-        this.x,
-        this.y,
-        radians(direction),
-        10,
-        0,
-        0,
-        "ui.dash-spike",
-        300,
-        100,
-        133,
-        400,
-        0,
-        true,
-      ),
-    );
+    if (game.effects === 1 || tru(game.effects))
+      this.world.particles.push(
+        new AfterImageParticle(
+          this.x,
+          this.y,
+          radians(direction),
+          10,
+          0,
+          0,
+          "ui.dash-spike",
+          300,
+          100,
+          133,
+          400,
+          0,
+          true,
+        ),
+      );
   }
   takeDamage(amount = 0, source = null) {
     this.damageTaken += Math.min(amount, this.health) * this.effectiveHealthMult;
@@ -285,85 +285,14 @@ class Entity {
     //No collisions if dead
     return !this.dead && dist(this.x, this.y, obj.x, obj.y) <= this.hitSize + obj.hitSize;
   }
-  // checkBullets() {
-  //   for (let bullet of this.world.bullets) {
-  //     //If colliding with a bullet on different team, that it hasn't already been hit by and that still exists
-  //     if (
-  //       bullet.collides &&
-  //       !bullet.remove &&
-  //       this.team !== bullet.entity.team &&
-  //       !bullet.damaged.includes(this) &&
-  //       bullet.collidesWith(this) //check collisions last for performance reasons
-  //     ) {
-  //       //Take all damage instances
-  //       for (let instance of bullet.damage) {
-  //         if (!instance.area)
-  //           this.damage(
-  //             instance.type,
-  //             (instance.amount +
-  //               (bullet.source ? bullet.source.getDVScale() : 0) +
-  //               (instance.levelScaling ?? 0) * game.level) *
-  //               //If boss, multiply damage by boss damage multiplier, if present, or else 1. If not boss, multiply by 1.
-  //               (this instanceof Boss ? instance.bossDamageMultiplier ?? 1 : 1),
-  //             bullet.entity
-  //           ); //Wait if kaboom
-  //         this.maxHealth -= instance.amount * bullet.maxHPReductionFactor;
-  //       }
-  //       if (bullet.controlledKnockback) {
-  //         //Get direction to the target
-  //         let direction = degrees(
-  //           p5.Vector.sub(
-  //             createVector(bullet.entity.target.x, bullet.entity.target.y), //Target pos 'B'
-  //             createVector(bullet.x, bullet.y) //Bullet pos 'A'
-  //           ).heading() //'A->B' = 'B' - 'A'
-  //         );
-  //         this.knock(bullet.knockback, direction, bullet.kineticKnockback); //Knock with default resolution
-  //       } else {
-  //         this.knock(
-  //           bullet.knockback,
-  //           bullet.direction,
-  //           bullet.kineticKnockback
-  //         ); //Knock with default resolution
-  //       }
-  //       if (bullet.status !== "none") {
-  //         this.applyStatus(bullet.status, bullet.statusDuration);
-  //       }
-  //       //Make the bullet know
-  //       bullet.damaged.push(this);
-  //       bullet.onHit(this);
-  //       if (!bullet.silent) {
-  //         playSound(this.hitSound);
-  //         playSound(bullet.hitSound);
-  //       }
-  //       //Reduce pierce
-  //       bullet.pierce--;
-  //       //If exhausted
-  //       if (bullet.pierce < 0) {
-  //         if (bullet instanceof LaserBullet) bullet.canHurt = false;
-  //         else bullet.remove = true; //Delete
-  //       }
-  //     } else {
-  //       if (
-  //         !bullet.remove &&
-  //         this.team !== bullet.entity.team &&
-  //         bullet.damaged.includes(this)
-  //       ) {
-  //         if (bullet.multiHit && !bullet.collidesWith(this)) {
-  //           //Unpierce it
-  //           bullet.damaged.splice(bullet.damaged.indexOf(this), 1);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
   tickStatuses() {
     this.effectiveSpeedMult =
       this.effectiveDamageMult =
       this.effectiveHealthMult =
       this.effectiveResistanceMult =
         1;
-    for (let status of this.statuses) {
-      let effect = Registry.statuses.get(status.effect);
+    for (const status in this.statuses) {
+      const effect = Registry.statuses.get(status);
       if (effect.vfx !== "none" && tru(effect.vfxChance))
         emitEffect(effect.vfx, this, rnd(this.hitSize), rnd(this.hitSize));
       this.damage(effect.damageType, effect.damage);
@@ -372,21 +301,23 @@ class Entity {
       this.effectiveDamageMult *= effect.damageMult ?? 1;
       this.effectiveHealthMult *= effect.healthMult ?? 1;
       this.effectiveResistanceMult *= effect.resistanceMult ?? 1;
-      if (status.timeLeft > 0)
-        status.timeLeft--; //Tick timer
-      else this.statuses.splice(this.statuses.indexOf(status), 1); //Delete status
+      if (this.statuses[status] > 1)
+        this.statuses[status]--; //Tick timer
+      else delete this.statuses[status];
     }
   }
   applyStatus(effect, time) {
-    this.statuses.push({ effect: effect, time: time, timeLeft: time });
+    this.statuses[effect] = Math.max(+time, this.statuses[effect] || 0);
   }
   clearStatus(effect) {
-    this.statuses = this.statuses.filter((x) => x.effect !== effect);
+    delete this.statuses[effect];
   }
   scaleToDifficulty() {
     //Do nothing, as it doesn't matter for normal entities
   }
-  onDeath(source) {}
+  onDeath(source) {
+    if (this._shield) this.burstShield();
+  }
   onDespawn() {}
 
   moveTowards(x, y, rotate = false) {

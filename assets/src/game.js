@@ -764,7 +764,9 @@ function reset() {
   // Reset some UI
   UIComponent.setCondition("boss:no");
 
-  //garbage collect player and support
+  // mark for removal from world
+  game.support.dead = game.player.dead = true;
+  // garbage collect player and support
   game.support = null;
   game.player = null;
 }

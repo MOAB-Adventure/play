@@ -31,8 +31,6 @@ class Weapon {
   maxAccel = 2;
   #acceleration = 0;
   #accelerated = 0;
-  //Death Value
-  dvRatio = 0; //Amount damage increases by per DV
   //Sound
   fireSound = null;
   //Recoil/Rotation
@@ -40,12 +38,11 @@ class Weapon {
   rotate = true;
   maxRotation = -1;
   themeColour = [100, 100, 100];
+  //why only now?!?!
+  shootX = 0;
   constructor() {}
   get rotationRadians() {
     return (this.rotation / 180) * Math.PI;
-  }
-  getDVScale() {
-    return this.slot.entity.dv * this.dvRatio;
   }
   resetCD() {
     this._cooldown = this.minReload;
@@ -125,9 +122,10 @@ class Weapon {
 
       if (this.recoil) this.slot.entity.knock(this.recoil, this.rotation + 180);
 
+      let v = new Vector(this.x,this.y).add(new DirectionVector(this.rotation, this.shootX));
       patternedBulletExpulsion(
-        this.x,
-        this.y,
+        v.x,
+        v.y,
         this.shoot?.bullet ?? {},
         this.shoot?.pattern?.amount ?? 1,
         this.rotation + (this.shoot?.pattern?.offset ?? 0),

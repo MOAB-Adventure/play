@@ -8,6 +8,7 @@ class Deflection extends Bullet {
 
   // sizing
   growth = 15; // hitsize increase per frame
+  falloff = 0; // growth falloff amount per frame: 0.01 = multiplies by 0.99 every frame
 
   colour = [50, 255, 255, 150];
   colourTo = [50, 255, 255, 0];
@@ -35,6 +36,7 @@ class Deflection extends Bullet {
       } else {
         this.lifetime -= dt;
         this.hitSize += this.growth;
+        if (this.falloff) this.growth *= 1 - this.falloff;
       }
       this.checkEntities();
       this.pos = new Vector(this.entity.x, this.entity.y);
@@ -93,7 +95,7 @@ class Shield extends Deflection {
   _pulse = 0;
   colour = [50, 255, 255, 0];
   colourTo = [50, 255, 255, 150];
-  trailColour = [0, 255, 255, 50];
+  trailColour = [0, 255, 255, 0];
   trailColourTo = [0, 255, 255, 255];
   hitSize = 0;
   init() {
@@ -105,8 +107,9 @@ class Shield extends Deflection {
     //Not if dead
     if (!this.remove) {
       this.intervalTick();
+      if(this.entity?.dead) this.remove = true;
       //Tick lifetime
-      if (this.lifetime <= 0 || this.entity.dead) {
+      if (this.lifetime <= 0) {
         if (this.strength <= 0) {
           this.remove = true;
           return;
@@ -127,7 +130,8 @@ class Shield extends Deflection {
   draw() {
     push();
     let lf = this.lifetime / this.maxLife;
-    fill(...blendColours(this.colour, this.colourTo, lf));
+    if (this.lifetime <= 0) fill(...blendColours(this.colour, this.colourTo, lf));
+    else noFill();
     stroke(...blendColours(this.trailColour, this.trailColourTo, lf));
     strokeWeight(this.trailWidth);
     circle(this.x, this.y, this.hitSize * 2);
@@ -206,7 +210,8 @@ class ShieldWall extends Shield {
   }
   /**@param {Bullet} bullet  */
   bulbonk(bullet) {
-    if (bullet.x < this.x) bullet.direction = 180; //if to left, reflect left
+    if (bullet.x < this.x)
+      bullet.direction = 180; //if to left, reflect left
     else if (bullet.x > this.x) bullet.direction = 0; //if to right, reflect right
     bullet.entity = this.entity;
     bullet.step(1);

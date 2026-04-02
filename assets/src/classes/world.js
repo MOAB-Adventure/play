@@ -127,7 +127,7 @@ class World {
               bullet.x,
               bullet.y,
               instance.amount +
-                (bullet.source ? bullet.source.getDVScale() : 0) +
+                (instance.dvRatio && bullet.entity ? instance.dvRatio * bullet.entity.dv : 0) +
                 (instance.levelScaling ?? 0) * game.level,
               instance.type,
               instance.area,
@@ -157,18 +157,21 @@ class World {
         SoundCTX.play(bullet.despawnSound);
         //Delete the bullet
         this.bullets.splice(b, 1);
+        b--;
       }
     }
     len = this.bgparticles.length;
     for (let p = 0; p < len; p++) {
       if (this.bgparticles[p]?.remove) {
         this.bgparticles.splice(p, 1);
+        p--;
       }
     }
     len = this.particles.length;
     for (let p = 0; p < len; p++) {
       if (this.particles[p]?.remove) {
         this.particles.splice(p, 1);
+        p--;
       }
     }
     len = this.entities.length;
@@ -219,9 +222,9 @@ class World {
                 [255, 0, 0],
                 [255, 0, 0, 0],
                 0,
-                d*2,
+                d * 2,
                 0,
-                d*2,
+                d * 2,
                 0,
                 false,
                 false,
@@ -240,6 +243,7 @@ class World {
         game.maxDV += entity.dv;
         if (entity instanceof Boss && !entity.isMinion) game.totalBosses++;
         this.entities.splice(e, 1);
+        e--;
       }
     }
     //No search algorithms => faster

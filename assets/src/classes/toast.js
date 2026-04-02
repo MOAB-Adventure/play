@@ -40,24 +40,29 @@ class ToastStyle {
   titleColour = [50];
   /**@readonly */
   static get plain() {
-    return construct({ outlineWidth: 3 }, ToastStyle);
+    return this.#pl;
   }
+  static #pl = construct({ outlineWidth: 3 }, this);
   /**@readonly */
   static get progress() {
-    return construct({ titleColour: [20, 160, 220] }, ToastStyle);
+    return this.#pr;
   }
+  static #pr = construct({ titleColour: [20, 160, 220] }, this);
   /**@readonly */
   static get achievement() {
-    return construct({ titleColour: [140, 70, 200] }, ToastStyle);
+    return this.#ac;
   }
+  static #ac = construct({ titleColour: [140, 70, 200] }, this);
   /**@readonly */
   static get ending() {
-    return construct({ titleColour: [200, 100, 30] }, ToastStyle);
+    return this.#en;
   }
+  static #en = construct({ titleColour: [200, 100, 30] }, this);
   /**@readonly */
   static get error() {
-    return construct({ titleColour: [170, 40, 40] }, ToastStyle);
+    return this.#er;
   }
+  static #er = construct({ titleColour: [170, 40, 40] }, this);
 }
 
 class ToastManager {

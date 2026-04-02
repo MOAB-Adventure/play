@@ -389,7 +389,7 @@ createUIComponent(
   () => {
     UIComponent.setCondition("ap4-slot:1");
   },
-  "Continuous Laser Beam",
+  "Flamethrower",
   true,
   40
 );
@@ -417,7 +417,7 @@ createUIComponent(
   0,
   "none",
   null,
-  "AP4.1: Continuous Laser Beam",
+  "AP4.1: Flamethrower",
   true,
   40
 );
@@ -430,7 +430,7 @@ createUIComponent(
   0,
   "none",
   null,
-  "Persistent piercing lasers that follow\nthe mouse pointer.\n\nFire rate: Low, but lasts a while\nDamage: High over time\nArea: Very Low\nAim Required: Medium-High\nSupport Value: None",
+  "Wide-range incineration of weaker enemies.\n\nFire rate: Continuous\nDamage: Low initially, high over time\nArea: Wide but short\nAim Required: Low\nSupport Value: Mid",
   true,
   30
 );

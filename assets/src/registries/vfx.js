@@ -18,6 +18,185 @@ Registry.vfx.add("fire", {
     colourTo: [255, 80, 20, 0],
   },
 });
+Registry.vfx.add("dragon-fire", {
+  type: "vfx.particle",
+  cone: 360,
+  particle: {
+    //All
+    lifetime: 60,
+    direction: 0,
+    speed: 1,
+    decel: 0.02,
+    rotateSpeed: 0,
+    moveWithBackground: true,
+    shape: "circle",
+    widthFrom: 20,
+    widthTo: 30,
+    heightFrom: 20,
+    heightTo: 30,
+    colourFrom: [255, 200, 150, 100],
+    colourTo: [255, 50, 160, 0],
+  },
+});
+Registry.vfx.add("thermite", {
+  type: "vfx.multi",
+  effects: [
+    {
+      type: "vfx.particle",
+      cone: 360,
+      particle: {
+        //All
+        lifetime: 20,
+        direction: 0,
+        speed: 1,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "circle",
+        widthFrom: 20,
+        widthTo: 30,
+        heightFrom: 20,
+        heightTo: 30,
+        colourFrom: [255, 255, 250, 100],
+        colourTo: [255, 80, 20, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 360,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 10,
+        direction: 0,
+        speed: 0,
+        decel: 0,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 30,
+        widthTo: 30,
+        heightFrom: 150,
+        heightTo: 150,
+        colourFrom: [255, 255, 255, 75],
+        colourTo: [255, 200, 200, 0],
+      },
+    },
+  ],
+});
+Registry.vfx.add("thermite-trail", {
+  type: "vfx.multi",
+  effects: [
+    {
+      type: "vfx.particle",
+      cone: 360,
+      particle: {
+        //All
+        lifetime: 20,
+        direction: 0,
+        speed: 1,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "circle",
+        widthFrom: 20,
+        widthTo: 30,
+        heightFrom: 20,
+        heightTo: 30,
+        colourFrom: [255, 255, 250, 100],
+        colourTo: [255, 80, 20, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 360,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 10,
+        direction: 0,
+        speed: 0.5,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "circle",
+        widthFrom: 300,
+        widthTo: 300,
+        heightFrom: 300,
+        heightTo: 300,
+        colourFrom: [255, 255, 255, 10],
+        colourTo: [255, 200, 200, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 360,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 10,
+        direction: 0,
+        speed: 0.5,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 50,
+        widthTo: 50,
+        heightFrom: 350,
+        heightTo: 350,
+        colourFrom: [255, 255, 255, 75],
+        colourTo: [255, 200, 200, 0],
+      },
+    },
+  ],
+});
+Registry.vfx.add("thermite-trail-low", {
+  type: "vfx.multi",
+  effects: [
+    {
+      type: "vfx.particle",
+      cone: 360,
+      particle: {
+        //All
+        lifetime: 20,
+        direction: 0,
+        speed: 1,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "circle",
+        widthFrom: 20,
+        widthTo: 30,
+        heightFrom: 20,
+        heightTo: 30,
+        colourFrom: [255, 255, 250, 100],
+        colourTo: [255, 80, 20, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 360,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 10,
+        direction: 0,
+        speed: 0.5,
+        decel: 0.02,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 30,
+        widthTo: 30,
+        heightFrom: 150,
+        heightTo: 150,
+        colourFrom: [255, 255, 255, 75],
+        colourTo: [255, 200, 200, 0],
+      },
+    },
+  ],
+});
 Registry.vfx.add("ice", {
   type: "vfx.particle",
   cone: 360,
@@ -38,6 +217,26 @@ Registry.vfx.add("ice", {
     colourTo: [0, 100, 100, 0],
   },
 });
+Registry.vfx.add("sublimating", {
+  type: "vfx.particle",
+  cone: 360,
+  particle: {
+    //All
+    lifetime: 60,
+    direction: 0,
+    speed: 1,
+    decel: 0.02,
+    rotateSpeed: 0,
+    moveWithBackground: true,
+    shape: "rhombus",
+    widthFrom: 15,
+    widthTo: 20,
+    heightFrom: 15,
+    heightTo: 20,
+    colourFrom: [255, 255, 255, 100],
+    colourTo: [232, 56, 255, 0],
+  },
+});
 Registry.vfx.add("radiation", {
   type: "vfx.particle",
   cone: 360,
@@ -54,7 +253,7 @@ Registry.vfx.add("radiation", {
     widthTo: 50,
     heightFrom: 50,
     heightTo: 50,
-    colourFrom: [0, 100, 0, 10],
+    colourFrom: [0, 100, 0, 100],
     colourTo: [0, 80, 0, 0],
   },
 });

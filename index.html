@@ -14,23 +14,23 @@
     //patchinator 9000
     p5.prototype.textHeight = function (...args) {
 
-    const tL = this._renderer.textLeading();
-    const tS = this._renderer.textSize();
+      const tL = this._renderer.textLeading();
+      const tS = this._renderer.textSize();
 
-    let lineNum = 0;
-    if (typeof args[0] !== undefined) {
-      lineNum = args[0].split(/\r?\n|\r|\n/g).length;
-    }
-    const textH = tL * (lineNum - 1) + tS;
+      let lineNum = 0;
+      if (typeof args[0] !== undefined) {
+        lineNum = args[0].split(/\r?\n|\r|\n/g).length;
+      }
+      const textH = tL * (lineNum - 1) + tS;
 
-    return textH;
-  };
+      return textH;
+    };
   </script>
-  <!-- <script src="https://unpkg.com/p5.js-svg@1.6.0"></script> -->
   <script src="https://unpkg.com/p5.fillgradient"></script>
 </head>
 
 <body>
+  <!-- so many f***ing scripts -->
   <script>
     //Disable p5's errors, they don't really help
     p5.disableFriendlyErrors = true;
@@ -140,6 +140,7 @@
   <script>
     reloadCachedOptions();
   </script>
+  <script src="./assets/src/dev-helper.js"></script>
 </body>
 
 </html>

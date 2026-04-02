@@ -28,6 +28,7 @@ class ShieldProjector extends SupportWeapon {
   strength = 100;
   spawnTime = 15;
   reshield = false;
+  reshieldPulses = 3;
   fire() {
     if (this._cooldown <= 0 && (this.reshield || !this.slot.entity.target._shield)) {
       SoundCTX.play(this.fireSound);
@@ -36,7 +37,7 @@ class ShieldProjector extends SupportWeapon {
 
       if(this.recoil) this.slot.entity.knock(this.recoil, this.rotation + 180);
 
-      this.slot.entity.target.shield(this.strength, this.spawnTime, this.shoot.bullet ?? {});
+      this.slot.entity.target.shield(this.strength, this.spawnTime, this.shoot.bullet ?? {}, this.reshieldPulses);
       this.parts.forEach((x) => x.fire && x.fire()); //Tick all parts
     }
   }
