@@ -1,4 +1,4 @@
-[![Deployment status](https://github.com/LightningLaser8/MOAB-Adventure/actions/workflows/pages/pages-build-deployment/badge.svg?branch=web-deployment)](https://github.com/LightningLaser8/MOAB-Adventure/actions/workflows/pages/pages-build-deployment)  
+[![Deployment status](https://github.com/MOAB-Adventure/play/actions/workflows/pages/pages-build-deployment/badge.svg?branch=web-deployment)](https://github.com/MOAB-Adventure/play/actions/workflows/pages/pages-build-deployment)  
 ![MOAB Adventure Title Screen](./assets/textures/screens/title.png)  
 MOAB Adventure is a side-scrolling aerial shooter game, written in JavaScript.  
 This game takes the same concept as Bad Piggies and another one of my games, [Bloons Monkey Doom](https://github.com/LightningLaser8/Bloons-Monkey-Doom): What if you played as the original game's enemy?  
