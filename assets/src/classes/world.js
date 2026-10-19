@@ -175,9 +175,8 @@ class World {
       if (entity?.dead) {
         if (entity === game.player && game.mode === "sandbox") {
           entity.dead = false;
-          game.deaths++;
           toasts.show(
-            `Death #${game.deaths}`,
+            `Death #${++game.deaths}`,
             `Source: ${entity.lastHurtSource?.name ?? "None"}`,
             240,
             ToastStyle.error,
@@ -264,7 +263,7 @@ class World {
     }
   }
   tickSpawns(dt) {
-    if (this.transitioning) return;
+    if (this.transitioning || this.reducedSpawns) return;
     for (let spawnGroup of this.spawning) {
       if (
         (spawnGroup.imposMode === "when-on" && game.difficulty !== "impossible") ||
@@ -278,7 +277,7 @@ class World {
         ent.y = rnd(game.borderTop, game.borderBottom);
         spawnGroup.$currentCooldown = spawnGroup.interval;
       } else {
-        if (!this.reducedSpawns) spawnGroup.$currentCooldown -= dt;
+        spawnGroup.$currentCooldown -= dt;
       }
     }
   }
@@ -331,8 +330,6 @@ class World {
     UIComponent.setCondition("boss:yes"); //There is, in fact, a boss.
     ent.addToWorld(this); //Add entity
     this.boss = ent;
-    SoundCTX.stop(this.bossmusic);
-    SoundCTX.stop(this.bgm);
     this.bossmusic = ent.bossmusic;
     return ent;
   }

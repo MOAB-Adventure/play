@@ -11,6 +11,7 @@ class LaserBullet extends Bullet {
   source = null;
   #dirInited = false;
   bounceable = false;
+  hitEntityOrigin = true;
   init() {
     super.init();
     if (this.extendTime === -1) this.extendTime = this.maxLife * 0.2;
@@ -115,36 +116,5 @@ class LaserBullet extends Bullet {
     }
     //If every check failed, return false
     return false;
-  }
-  //On top of damage
-  onHit(entity) {
-    //Always spawn hit bullets
-    patternedBulletExpulsion(
-      entity.x,
-      entity.y,
-      this.hitBullet,
-      this.hitNumber,
-      this.direction + this.hitDirection,
-      this.hitSpread,
-      this.hitSpacing,
-      this.world,
-      this.entity,
-      this.source,
-    );
-    //If dead, spawn destroy bullets
-    if (entity.dead) {
-      patternedBulletExpulsion(
-        entity.x,
-        entity.y,
-        this.destroyBullet,
-        this.destroyNumber,
-        this.direction + this.destroyDirection,
-        this.destroySpread,
-        this.destroySpacing,
-        this.world,
-        this.entity,
-        this.source,
-      );
-    }
   }
 }

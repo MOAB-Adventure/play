@@ -57,16 +57,11 @@ class Weapon {
       this.x = this.slot.entity.x + this.slot.posX;
       this.y = this.slot.entity.y + this.slot.posY;
       if (this.rotate && this.slot.entity.target) {
-        this.rotation = new Vector(this.slot.entity.target.x, this.slot.entity.target.y).subXY(
-          this.x,
-          this.y,
-        ).angle;
+        this.rotation = new Vector(this.slot.entity.target.x, this.slot.entity.target.y).subXY(this.x, this.y).angle;
         //If there is a rotation confinement
         if (this.maxRotation >= 0) {
-          if (this.rotation > this.maxRotation + this.slot.entity.direction)
-            this.rotation = this.maxRotation + this.slot.entity.direction; //Constrain positively
-          if (this.rotation < -this.maxRotation + this.slot.entity.direction)
-            this.rotation = -this.maxRotation + this.slot.entity.direction; //Constrain negatively
+          if (this.rotation > this.maxRotation + this.slot.entity.direction) this.rotation = this.maxRotation + this.slot.entity.direction; //Constrain positively
+          if (this.rotation < -this.maxRotation + this.slot.entity.direction) this.rotation = -this.maxRotation + this.slot.entity.direction; //Constrain negatively
         }
       } else {
         this.rotation = this.slot.entity.direction;
@@ -76,7 +71,7 @@ class Weapon {
     if (this._cooldown > 0) {
       this._cooldown--;
     }
-    this.parts.forEach((x) => x.tick()); //Tick all parts
+    this.parts.forEach(x => x.tick()); //Tick all parts
   }
   getAcceleratedReloadRate() {
     if (this.#acceleration <= -1 || this.#acceleration > this.maxAccel) return this.reload; //If bad acceleration then ignore it
@@ -126,23 +121,12 @@ class Weapon {
         this.slot.entity,
         this,
       );
-      this.parts.forEach((x) => x.fire && x.fire()); //Tick all parts
+      this.parts.forEach(x => x.fire && x.fire()); //Tick all parts
     }
   }
 }
 
-function patternedBulletExpulsion(
-  x,
-  y,
-  bulletToSpawn,
-  amount = 1,
-  direction = 0,
-  spread = 0,
-  spacing = 0,
-  world,
-  entity,
-  source,
-) {
+function patternedBulletExpulsion(x, y, bulletToSpawn, amount = 1, direction = 0, spread = 0, spacing = 0, world, entity, source, preTick = false) {
   //Derives most of its code from `Weapon.fire()`
   //universal mode: a c t i v a t e
   //Max difference in direction
@@ -155,7 +139,8 @@ function patternedBulletExpulsion(
     let bulletToFire = bullet(bulletToSpawn);
     //Put the bullet in position
     bulletToFire.pos = new Vector(x, y);
-    bulletToFire.direction = direction; //do the offset
+    if (bulletToSpawn.absdir !== undefined) bulletToFire.direction = bulletToSpawn.absdir;
+    else bulletToFire.direction += direction; //do the offset
     //Apply uniform spread
     bulletToFire.direction += currentAngle;
     currentAngle += spacing;
@@ -167,5 +152,6 @@ function patternedBulletExpulsion(
     bulletToFire.source = source;
     //Spawn it in
     world.bullets.push(bulletToFire);
+    if (preTick) bulletToFire.step(1);
   }
 }

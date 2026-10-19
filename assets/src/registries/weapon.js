@@ -1130,7 +1130,7 @@ Registry.weapons.add("shotgun", {
       damage: [{ type: "ballistic", amount: 2 }],
       drawer: { image: "bullet.normal", width: 25, height: 12 },
     },
-    pattern: { amount: 3, spacing: 15 },
+    pattern: { amount: 3, spacing: 10 },
   },
   parts: [
     {

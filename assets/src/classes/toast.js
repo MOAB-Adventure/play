@@ -1,3 +1,4 @@
+const maxToastLineLength = 20;
 class Toast {
   totalTime = 0;
   timeLeft = 0;
@@ -9,14 +10,9 @@ class Toast {
    * @param {number} time How may frames this is out for (60fps)
    * @param {ToastStyle} styling What the toast looks like.
    */
-  constructor(
-    title = "Boo!",
-    text = "You have a notification.",
-    time = 240,
-    styling = ToastStyle.plain,
-  ) {
-    this.title = wrapWords(title, 10);
-    this.text = wrapWords(text, 25);
+  constructor(title = "Boo!", text = "You have a notification.", time = 240, styling = ToastStyle.plain) {
+    this.title = wrapWords(title, maxToastLineLength);
+    this.text = wrapWords(text, Math.ceil(maxToastLineLength * 1.33333333333));
     this.totalTime = this.timeLeft = time;
     this.style = styling;
     push();
@@ -71,26 +67,30 @@ class ToastStyle {
   static #er = construct({ titleColour: [170, 40, 40] }, this);
 }
 
+/** Handles showing and arranging toasts. Will automatically delay toasts until p5 is up, so can be used at any point. */
 class ToastManager {
-  /**@type {Toast[]} */
-  active = [];
+  /**@type {Set<Toast>} */
+  #active = new Set();
+  #inactive = [];
   tick() {
-    for (const toast of this.active) {
-      if (toast.timeLeft > 1) toast.timeLeft--;
+    if ("push" in window && this.#inactive.length) {
+      for (const toast of this.#inactive) this.#active.add(new Toast(...toast));
+      this.#inactive = [];
     }
-    this.active = this.active.filter((v) => v.timeLeft > 1);
+    for (const toast of this.#active) {
+      if (toast.timeLeft > 1) toast.timeLeft--;
+      else this.#active.delete(toast);
+    }
+    // this.active = this.active.filter(v => v.timeLeft > 1);
   }
   draw() {
     let offy = 200;
-    for (const toast of this.active) {
+    for (const toast of this.#active) {
       let width = Math.max(toast.titleWidth, toast.textWidth),
         height = 20 + toast.textHeight + toast.titleHeight; //30 * toast.textLines + 40 * toast.titleLines;
 
       let opacity = 255 - 4 * Math.max(0, 64 - toast.timeLeft);
-      let offx =
-        Math.min(1, (toast.timeLeft - 32) / 32) +
-        Math.min(1, (toast.totalTime - toast.timeLeft - 8) / 8) -
-        1;
+      let offx = Math.min(1, (toast.timeLeft - 32) / 32) + Math.min(1, (toast.totalTime - toast.timeLeft - 8) / 8) - 1;
       // console.log("width " + titlelen + " or " + textlen + ", chose " + width);
       // console.log("opacity " + opacity + ", off " + offx);
       push();
@@ -111,17 +111,14 @@ class ToastManager {
       noStroke();
       textSize(30);
       textAlign(LEFT, TOP);
-      text(
-        toast.text,
-        1920 - width / 2 - 10 - offx * (width / 2 + 30),
-        offy + 10 + toast.titleHeight,
-      );
+      text(toast.text, 1920 - width / 2 - 10 - offx * (width / 2 + 30), offy + 10 + toast.titleHeight);
       pop();
       offy += (height + 60) * Math.max(offx, 0);
     }
   }
   show(title, text, time, style) {
-    this.active.push(new Toast(title, text, time, style));
+    if ("push" in window) this.#active.add(new Toast(title, text, time, style));
+    else this.#inactive.push([title, text, time, style]);
   }
 }
 

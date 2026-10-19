@@ -50,6 +50,9 @@ class Entity {
   /** @type {Shield?} */
   _shield = null;
 
+  /** also boosts @type {Boost?}  */
+  _boost = null;
+
   //Movement
   aiActive = true;
   turnSpeed = 5;
@@ -75,7 +78,7 @@ class Entity {
     return this.resistances[type] >= 1;
   }
   burstShield(deflections = 1) {
-    repeat(deflections, (i) => {
+    repeat(deflections, i => {
       // make transparent deflection from old shield
       let bulletToFire = bullet({
         type: "deflect",
@@ -118,9 +121,9 @@ class Entity {
     this.scaleToDifficulty();
     this.maxHealth = this.health; //Stop part-damaged entities spawning
     /**@type {Array<WeaponSlot>} */
-    let madeSlots = this.weaponSlots.map((x) => construct(x, WeaponSlot)); //Create weapon slots
+    let madeSlots = this.weaponSlots.map(x => construct(x, WeaponSlot)); //Create weapon slots
     this.weaponSlots = [];
-    madeSlots.forEach((x) => {
+    madeSlots.forEach(x => {
       this.addWeaponSlot(x);
       let t = x.tier;
       x.tier = 0;
@@ -146,14 +149,7 @@ class Entity {
       this.health = this.maxHealth;
     }
   }
-  knock(
-    amount = 0,
-    direction = -this.direction,
-    kineticKnockback = false,
-    resolution = 1,
-    collided = [],
-    particles = true,
-  ) {
+  knock(amount = 0, direction = -this.direction, kineticKnockback = false, resolution = 1, collided = [], particles = true) {
     if (resolution < 0) resolution *= -1; //Fix possibility of infinite loop
     if (resolution == 0) resolution = 1;
     //so sin and cos only happen once
@@ -169,10 +165,10 @@ class Entity {
         for (let entity of this.world.entities) {
           if (
             //If a valid collision
-            entity !== this &&
-            !entity.dead &&
-            !collided.includes(entity) && //Not if already hit
-            this.collidesWith(entity)
+            entity !== this
+            && !entity.dead
+            && !collided.includes(entity) //Not if already hit
+            && this.collidesWith(entity)
           ) {
             //It's hit something!
             hit = true;
@@ -184,13 +180,7 @@ class Entity {
 
             //Propagate knockback
 
-            entity.knock(
-              amount * 0.75 /* exponential decay */,
-              direction,
-              true,
-              resolution,
-              collided,
-            ); //Pass on collided entities to prevent infinite loop
+            entity.knock(amount * 0.75 /* exponential decay */, direction, true, resolution, collided); //Pass on collided entities to prevent infinite loop
           }
         }
         //If hit, stop moving
@@ -204,23 +194,7 @@ class Entity {
     }
     //visual effect because cool
     if (particles && (game.effects === 1 || tru(game.effects)))
-      this.world.particles.push(
-        new AfterImageParticle(
-          this.x,
-          this.y,
-          radians(direction),
-          10,
-          0,
-          0,
-          "ui.dash-spike",
-          300,
-          100,
-          133,
-          400,
-          0,
-          true,
-        ),
-      );
+      this.world.particles.push(new AfterImageParticle(this.x, this.y, radians(direction), 10, 0, 0, "ui.dash-spike", 300, 100, 133, 400, 0, true));
   }
   takeDamage(amount = 0, source = null) {
     this.damageTaken += Math.min(amount, this.health) * this.effectiveHealthMult;
@@ -236,14 +210,19 @@ class Entity {
     slot.entity = this;
   }
   tick() {
+    // boost
+    if (this._boost) {
+      this._boost.tick(this);
+      if(this._boost.ended) this._boost = null;
+    }
+    // ai
     if (this.aiActive && this.trackTarget)
-      if (this.target)
-        this.trackPoint(this.target.x + this.trackingOffsetX, this.target.y + this.trackingOffsetY);
+      if (this.target) this.trackPoint(this.target.x + this.trackingOffsetX, this.target.y + this.trackingOffsetY);
+    // place weapons
     for (const slot of this.weaponSlots) {
       slot.tick();
     }
     this.lastPos = new Vector(this.x, this.y);
-    //Move towards tracking point
     this.tickStatuses();
     if (this._shield?.remove) this._shield = null;
   }
@@ -252,24 +231,10 @@ class Entity {
   }
   draw() {
     if (this.drawer.image) {
-      ImageCTX.draw(
-        this.drawer.image,
-        this.x,
-        this.y,
-        this.drawer.width,
-        this.drawer.height,
-        this.directionRad,
-      );
+      ImageCTX.draw(this.drawer.image, this.x, this.y, this.drawer.width, this.drawer.height, this.directionRad);
     } else {
       //If no image, draw shape instead
-      rotatedShape(
-        this.drawer.shape,
-        this.x,
-        this.y,
-        this.drawer.width,
-        this.drawer.height,
-        this.directionRad,
-      );
+      rotatedShape(this.drawer.shape, this.x, this.y, this.drawer.width, this.drawer.height, this.directionRad);
     }
     for (let slot of this.weaponSlots) {
       slot.draw();
@@ -280,15 +245,10 @@ class Entity {
     return !this.dead && dist(this.x, this.y, obj.x, obj.y) <= this.hitSize + obj.hitSize;
   }
   tickStatuses() {
-    this.effectiveSpeedMult =
-      this.effectiveDamageMult =
-      this.effectiveHealthMult =
-      this.effectiveResistanceMult =
-        1;
+    this.effectiveSpeedMult = this.effectiveDamageMult = this.effectiveHealthMult = this.effectiveResistanceMult = 1;
     for (const status in this.statuses) {
       const effect = Registry.statuses.get(status);
-      if (effect.vfx !== "none" && tru(effect.vfxChance))
-        emitEffect(effect.vfx, this, rnd(this.hitSize), rnd(this.hitSize));
+      if (effect.vfx !== "none" && tru(effect.vfxChance)) emitEffect(effect.vfx, this, rnd(this.hitSize), rnd(this.hitSize));
       this.damage(effect.damageType, effect.damage);
       this.heal(effect.healing);
       this.effectiveSpeedMult *= effect.speedMult ?? 1;

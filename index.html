@@ -35,12 +35,8 @@
     //Disable p5's errors, they don't really help
     p5.disableFriendlyErrors = true;
     //Game info
-    const gameVersion = "0.0.130";
-    const isPreview = true;
-    const branchName = "";
-    const CURRENT_SAVE_FORMAT_VERSION = 1;
-    let versionReplacementText = "";
   </script>
+  <script src="./assets/src/version.js"></script>
   <!-- Core -->
   <script src="./assets/src/classes/timer.js"></script>
   <script src="./assets/src/core/perf.js"></script>
@@ -57,6 +53,8 @@
   <script src="./assets/src/core/save-converter.js"></script>
   <!-- Classes -->
   <script src="./assets/src/classes/toast.js"></script>
+  <script src="./assets/src/classes/modifiers.js"></script>
+  <script src="./assets/src/classes/soul-mechanics.js"></script>
   <script src="./assets/src/classes/animation.js"></script>
   <script src="./assets/src/classes/particle.js"></script>
   <script src="./assets/src/classes/shape-particle.js"></script>
@@ -103,7 +101,9 @@
   <script src="./assets/src/registries/generic-type.js"></script>
   <script src="./assets/src/registries/weapon-type.js"></script>
   <script src="./assets/src/registries/bullet-type.js"></script>
+  <script src="./assets/src/registries/modifier-type.js"></script>
   <script src="./assets/src/registries/weapon.js"></script>
+  <script src="./assets/src/registries/infusions.js"></script>
   <script src="./assets/src/registries/slots.js"></script>
   <script src="./assets/src/registries/boss-weapon.js"></script>
   <script src="./assets/src/registries/player-boss-weapon.js"></script>
@@ -123,6 +123,7 @@
   <script src="./assets/src/ui/new-game.js"></script>
   <script src="./assets/src/ui/load-game.js"></script>
   <script src="./assets/src/ui/weapon-slots.js"></script>
+  <script src="./assets/src/ui/weapon-infusions.js"></script>
   <script src="./assets/src/ui/in-game.js"></script>
   <script src="./assets/src/ui/you-died.js"></script>
   <script src="./assets/src/ui/you-win.js"></script>

@@ -1,5 +1,5 @@
 class Registry {
-  /** Internal Map for holding the registry items. @type  {Map<String,any>}*/
+  /** Internal Map for holding the registry items. @type  {Map<string,any>}*/
   #content = new Map();
   /** @readonly */
   get size() {
@@ -9,6 +9,7 @@ class Registry {
   //Basic registries for holding objects used by the base game.
   static weaponType = new this();
   static bulletType = new this();
+  static modifierTypes = new this();
   static genericType = new this();
   static weapons = new this();
   static images = new this();
@@ -22,6 +23,7 @@ class Registry {
   static difficulties = new this();
   static slots = new this();
   static currency = new this();
+  static infusions = new this();
   /** Adds an item to registry.
    * @param {string} name Registry name of item. This is not case sensitive.
    * @param {*} item Item to add to registry.

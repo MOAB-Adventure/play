@@ -24,7 +24,7 @@ class Box extends ScalingEntity {
       super.tick();
       //Move
       this.x -= game.player.speed + this.speed;
-      if (this.x < game.borderLeft-this.hitSize) {
+      if (this.x < game.borderLeft - this.hitSize) {
         this.dead = true;
         this.left = true;
         //Give basic reward
@@ -32,23 +32,19 @@ class Box extends ScalingEntity {
       }
       if (this.square) this.direction = 0;
       // damage in here
-      for (let entity of this.world.entities) {
-        //If this is colliding with a living entity on a different team
-        if (
-          !entity.dead &&
-          entity.collides &&
-          entity.team !== this.team &&
-          this.collidesWith(entity)
-        ) {
-          // then hit them
-          entity.damage("collision", this.health, this);
-          //If they didn't die i.e. resisted, shielded, had more HP, etc.
-          if (!entity.dead) {
-            //Remove box
-            this.dead = true;
+      if (this.collides)
+        for (let entity of this.world.entities) {
+          //If this is colliding with a living entity on a different team (that isn't boosting)
+          if (!entity.dead && entity.collides && !entity._boost && entity.team !== this.team && this.collidesWith(entity)) {
+            // then hit them
+            entity.damage("collision", this.health, this);
+            //If they didn't die i.e. resisted, shielded, had more HP, etc.
+            if (!entity.dead) {
+              //Remove box
+              this.dead = true;
+            }
           }
         }
-      }
     }
   }
   scaleToDifficulty() {
@@ -62,7 +58,7 @@ class AngryBox extends Box {
       this.target = this.world.nearestEnemyTo(this.x, this.y, this.team);
       super.tick();
       if (this.target)
-        this.weaponSlots.forEach((s) => {
+        this.weaponSlots.forEach(s => {
           if (s?.weapon) s.weapon.fire();
         });
     }

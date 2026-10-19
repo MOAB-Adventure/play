@@ -5,9 +5,10 @@ class Booster extends Weapon {
   knockOthers = true;
   hasFireTrail = true;
   trailBullet = null;
+  burstBullet = null;
 
   directions = 1;
-  themeColour = col.from(255, 128, 0, );
+  themeColour = col.from(255, 128, 0);
   init() {
     super.init();
     delete this.shoot;
@@ -30,87 +31,111 @@ class Booster extends Weapon {
     if (this._cooldown > 0) {
       this._cooldown--;
     }
-    this.parts.forEach((x) => x.tick()); //Tick all parts
+    this.parts.forEach(x => x.tick()); //Tick all parts
   }
   fire() {
-    if (this._cooldown <= 0) {
+    if (this._cooldown <= 0 && !this.slot.entity._boost) {
       SoundCTX.play(this.fireSound);
       this._cooldown = this.getAcceleratedReloadRate();
       this.accelerate(); //Apply acceleration effects
 
-      Timer.main.repeat(
-        () => {
-          this.slot.entity.knock(this.boostPower, this.rotation, this.knockOthers);
+      if (this.hasFireTrail) {
+        patternedBulletExpulsion(
+          this.x,
+          this.y,
+          {
+            type: "laser",
+            length: this.boostPower,
+            extendTime: 1,
+            despawnTime: 1,
+            hitSize: this.boostPower / 4,
+            lifetime: this.boostDuration,
+            followsSource: true,
+            status: "ignited",
+            statusDuration: 180,
+            damage: [{ amount: 1, type: "fire" }],
+            drawer: { shape: "ellipse", fill: col.from(255, 128, 0) },
+          },
+          1,
+          this.rotation + 180,
+          0,
+          0,
+          this.slot.entity.world,
+          this.slot.entity,
+          this,
+        );
+      }
 
-          this.slot.entity.world.particles.push(
-            new AfterImageParticle(
-              this.slot.entity.x,
-              this.slot.entity.y,
-              this.slot.entity.directionRad,
-              this.trailDuration,
-              0,
-              0,
-              this.slot.entity.drawer.image,
-              this.slot.entity.drawer.width ?? 1,
-              this.slot.entity.drawer.width ?? 1,
-              this.slot.entity.drawer.height ?? 1,
-              this.slot.entity.drawer.height ?? 1,
-              0,
-              false
-            )
-          );
-          if (this.hasFireTrail) {
-            patternedBulletExpulsion(
-              this.x,
-              this.y,
-              {
-                type: "laser",
-                length: this.boostPower / 2,
-                hitSize: this.boostPower / 4,
-                lifetime: 1,
-                followsSource: true,
-                status: "ignited",
-                statusDuration: 180,
-                damage: [
-                  {
-                    amount: 1,
-                    type: "fire",
-                  },
-                ],
-                drawer: {
-                  shape: "ellipse",
-                  fill: "orange",
-                },
-              },
-              1,
-              this.rotation + 180,
-              0,
-              0,
-              this.slot.entity.world,
-              this.slot.entity,
-              this
-            );
-          }
-          if (this.trailBullet) {
-            patternedBulletExpulsion(
-              this.x,
-              this.y,
-              this.trailBullet,
-              1,
-              this.rotation + 180,
-              0,
-              0,
-              this.slot.entity.world,
-              this.slot.entity,
-              this
-            );
-          }
-        },
-        this.boostDuration,
-        1
-      );
+      const b = new Boost();
+      b.trail = this.trailBullet;
+      b.burst = this.burstBullet;
+      b.direction = this.rotation;
+      b.duration = this.boostDuration;
+      b.power = this.boostPower;
 
-      this.parts.forEach((x) => x.fire && x.fire()); //Tick all parts
+      this.slot.entity._boost = b;
+      // Timer.main.repeat(
+      //   () => {
+      //     this.slot.entity.knock(this.boostPower, this.rotation, this.knockOthers);
+      //     this.tick();
+
+      //     this.slot.entity.world.particles.push(
+      //       new AfterImageParticle(
+      //         this.slot.entity.x,
+      //         this.slot.entity.y,
+      //         this.slot.entity.directionRad,
+      //         this.trailDuration,
+      //         0,
+      //         0,
+      //         this.slot.entity.drawer.image,
+      //         this.slot.entity.drawer.width ?? 1,
+      //         this.slot.entity.drawer.width ?? 1,
+      //         this.slot.entity.drawer.height ?? 1,
+      //         this.slot.entity.drawer.height ?? 1,
+      //         0,
+      //         false,
+      //       ),
+      //     );
+      //     if (this.trailBullet) {
+      //       patternedBulletExpulsion(
+      //         this.x,
+      //         this.y,
+      //         this.trailBullet,
+      //         1,
+      //         this.rotation + 180,
+      //         0,
+      //         0,
+      //         this.slot.entity.world,
+      //         this.slot.entity,
+      //         this,
+      //         true,
+      //       );
+      //     }
+      //   },
+      //   this.boostDuration,
+      //   1,
+      // );
+
+      this.parts.forEach(x => x.fire && x.fire()); //Tick all parts
+    }
+  }
+}
+class Boost {
+  direction = 0;
+  duration = 6;
+  power = 20;
+  trail = null;
+  burst = null;
+  ended = false;
+  /** @param {Entity} entity  */
+  tick(entity) {
+    this.duration--;
+    if (this.duration <= 0) {
+      this.ended = true;
+      if (this.burst) patternedBulletExpulsion(entity.x, entity.y, this.burst, 1, this.direction, 0, 0, entity.world, entity, null, true);
+    } else {
+      entity.knock(this.power, this.direction, true);
+      if (this.trail) patternedBulletExpulsion(entity.x, entity.y, this.trail, 1, this.direction, 0, 0, entity.world, entity, null, true);
     }
   }
 }

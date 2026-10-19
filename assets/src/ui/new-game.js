@@ -1,5 +1,33 @@
 //    New Game Menu 'new-game'
 UIComponent.setCondition("difficulty:none");
+createUIComponent(
+  ["new-game"],
+  [],
+  960,
+  120,
+  1500,
+  75,
+  "none",
+  undefined,
+  "Create Game",
+  false,
+  50
+);
+createUIComponent(
+  ["new-game"],
+  [],
+  320,
+  122,
+  200,
+  50,
+  "none",
+  () => {
+    ui.menuState = "start-menu";
+  },
+  "*< Back",
+  false,
+  30
+).isBackButton = true;
 //Difficulty selector
 createGamePropertySelector(
   ["new-game"],
@@ -192,7 +220,7 @@ createUIComponent(
 );
 //fires
 createParticleEmitter(
-  ["new-game", "options", "weapon-slots"],
+  ["new-game", "options", "weapon-slots", "weapon-infusions"],
   ["difficulty:impossible"],
   960,
   1080,

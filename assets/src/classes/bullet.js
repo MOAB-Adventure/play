@@ -71,6 +71,7 @@ class Bullet {
   hitDirection = 0;
   hitSpread = 0;
   hitSpacing = 0;
+  hitEntityOrigin = false;
   //On destroy bullets
   destroyBullet = {};
   destroyNumber = 0;
@@ -80,7 +81,7 @@ class Bullet {
 
   // sticky...
   sticky = false;
-  extraStickTime = 240;
+  extraStickTime = 0;
   persistAfterUnstick = true;
   /** @type {Entity?} */
   _stuckTo = null;
@@ -124,18 +125,14 @@ class Bullet {
         this._stuckTo = null;
         // life retract
         if (!this.persistAfterUnstick) this.remove = true;
-      } else
-        this.pos = new Vector(this._stuckTo.x, this._stuckTo.y).add(
-          this._stuckOffset.rotate(this._stuckTo.direction),
-        );
+      } else this.pos = new Vector(this._stuckTo.x, this._stuckTo.y).add(this._stuckOffset.rotate(this._stuckTo.direction));
     }
     this.moveToSrc();
   }
   moveToSrc() {
     if (this.followsSource && this.source) {
       this.pos = new Vector(this.source.x, this.source.y);
-      if (this.source instanceof Weapon)
-        this.pos = this.pos.add(new DirectionVector(this.source.rotation, this.source.shootX));
+      if (this.source instanceof Weapon) this.pos = this.pos.add(new DirectionVector(this.source.rotation, this.source.shootX));
       this.direction = this.source.rotation;
     }
   }
@@ -211,37 +208,14 @@ class Bullet {
     } else if (this.trailType === "bilinear") {
       if (!reduced || tru(game.effects)) {
         this.world.bgparticles.push(
-          new LinearParticle(
-            [this.prev, this.pos],
-            this.getTrailLife(),
-            [this.trailColourTo],
-            0,
-            this.trailWidth * 1.9,
-            0,
-          ),
+          new LinearParticle([this.prev, this.pos], this.getTrailLife(), [this.trailColourTo], 0, this.trailWidth * 1.9, 0),
         );
-        this.world.particles.push(
-          new LinearParticle(
-            [this.prev, this.pos],
-            this.getTrailLife(),
-            [this.trailColour],
-            0,
-            this.trailWidth,
-            0,
-          ),
-        );
+        this.world.particles.push(new LinearParticle([this.prev, this.pos], this.getTrailLife(), [this.trailColour], 0, this.trailWidth, 0));
       }
     } else if (this.trailType === "linear") {
       if (!reduced || tru(game.effects))
         this.world.particles.push(
-          new LinearParticle(
-            [this.prev, this.pos],
-            this.getTrailLife(),
-            [this.trailColour, this.trailColourTo],
-            0,
-            this.trailWidth * 1.9,
-            0,
-          ),
+          new LinearParticle([this.prev, this.pos], this.getTrailLife(), [this.trailColour, this.trailColourTo], 0, this.trailWidth * 1.9, 0),
         );
     } else if (this.trailType === "lightning") {
       if (!reduced || tru(game.effects))
@@ -264,13 +238,7 @@ class Bullet {
         if (this._trailCounter <= 0) {
           if (this.world?.particles != null && this.trail) {
             let v = new DirectionVector(this.direction, e);
-            autoScaledEffect(
-              this.trailType,
-              this.world,
-              this.x - v.x,
-              this.y - v.y,
-              this.direction,
-            );
+            autoScaledEffect(this.trailType, this.world, this.x - v.x, this.y - v.y, this.direction);
           }
           this._trailCounter = this.trailInterval;
         } else {
@@ -284,25 +252,11 @@ class Bullet {
   draw() {
     if (this.drawer.hidden) return;
     if (this.drawer.image) {
-      ImageCTX.draw(
-        this.drawer.image,
-        this.x,
-        this.y,
-        this.drawer.width,
-        this.drawer.height,
-        this.directionRad,
-      );
+      ImageCTX.draw(this.drawer.image, this.x, this.y, this.drawer.width, this.drawer.height, this.directionRad);
     } else {
       //If no image, draw shape instead
       col.fill(this.drawer.fill);
-      rotatedShape(
-        this.drawer.shape,
-        this.x,
-        this.y,
-        this.drawer.width,
-        this.drawer.height,
-        this.directionRad,
-      );
+      rotatedShape(this.drawer.shape, this.x, this.y, this.drawer.width, this.drawer.height, this.directionRad);
     }
   }
   distanceTo(x, y) {
@@ -327,12 +281,11 @@ class Bullet {
       this.world,
       this.entity,
       this.source,
+      this.maxLife === 0,
     );
   }
   interval() {
-    let v = new Vector(this.x, this.y).add(
-      Vector.fromAngle(this.direction).scale(this.intervalOffset),
-    );
+    let v = new Vector(this.x, this.y).add(Vector.fromAngle(this.direction).scale(this.intervalOffset));
     patternedBulletExpulsion(
       v.x,
       v.y,
@@ -344,6 +297,7 @@ class Bullet {
       this.world,
       this.entity,
       this.source,
+      this.maxLife === 0,
     );
   }
   intervalTick() {
@@ -355,33 +309,36 @@ class Bullet {
     }
   }
   //On top of damage
+  /** @param {Entity} entity  */
   onHit(entity) {
     //Always spawn hit bullets
     patternedBulletExpulsion(
-      this.x,
-      this.y,
+      this.hitEntityOrigin ? entity.x : this.x,
+      this.hitEntityOrigin ? entity.y : this.y,
       this.hitBullet,
       this.hitNumber,
-      this.direction + this.hitDirection,
+      (this.hitEntityOrigin ? entity.pos.sub(this.pos).angle : this.direction) + this.hitDirection,
       this.hitSpread,
       this.hitSpacing,
       this.world,
       this.entity,
       this.source,
+      this.maxLife === 0,
     );
     //If dead, spawn destroy bullets
     if (entity.dead) {
       patternedBulletExpulsion(
-        this.x,
-        this.y,
+        this.hitEntityOrigin ? entity.x : this.x,
+        this.hitEntityOrigin ? entity.y : this.y,
         this.destroyBullet,
         this.destroyNumber,
-        this.direction + this.destroyDirection,
+        (this.hitEntityOrigin ? entity.pos.sub(this.pos).angle : this.direction) + this.destroyDirection,
         this.destroySpread,
         this.destroySpacing,
         this.world,
         this.entity,
         this.source,
+        this.maxLife === 0,
       );
     }
   }
@@ -390,13 +347,7 @@ class Bullet {
     if (this._stuckTo) return;
     for (let entity of this.world.entities) {
       //If colliding with a this on different team, that it hasn't already been hit by and that still exists
-      if (
-        this.collides &&
-        entity.collides &&
-        !this.remove &&
-        entity.team !== this.entity.team &&
-        !this.damaged.includes(entity)
-      ) {
+      if (this.collides && entity.collides && !this.remove && entity.team !== this.entity.team && !this.damaged.includes(entity)) {
         let c = this.collidesWith(entity); //check collisions last for performance reasons
         if (c) {
           //Take all damage instances
@@ -404,11 +355,11 @@ class Bullet {
             if (!instance.area)
               entity.damage(
                 instance.type,
-                ((instance.amount??0) +
-                  (instance.dvRatio && this.entity ? instance.dvRatio * this.entity.dv : 0) +
-                  (instance.levelScaling ?? 0) * game.level) *
+                ((instance.amount ?? 0)
+                  + (instance.dvRatio && this.entity ? instance.dvRatio * this.entity.dv : 0)
+                  + (instance.levelScaling ?? 0) * game.level)
                   //If boss, multiply damage by boss damage multiplier, if present, or else 1. If not boss, multiply by 1.
-                  ((entity instanceof Boss && !entity.isMinion) ? (instance.bossDamageMultiplier ?? 1) : 1),
+                  * (entity instanceof Boss && !entity.isMinion ? (instance.bossDamageMultiplier ?? 1) : 1),
                 this.entity,
               ); //Wait if kaboom
             entity.maxHealth -= instance.amount * this.maxHPReductionFactor;
@@ -429,11 +380,7 @@ class Bullet {
           this.damaged.push(entity);
           this.onHit(entity);
           if (!this.silent) {
-            SoundCTX.play(
-              this.damage.some((d) => entity.immuneTo(d.type)) ?
-                (entity.deflectSound ?? entity.hitSound)
-              : entity.hitSound,
-            );
+            SoundCTX.play(this.damage.some(d => entity.immuneTo(d.type)) ? (entity.deflectSound ?? entity.hitSound) : entity.hitSound);
             SoundCTX.play(this.hitSound);
           }
           //Reduce pierce
@@ -458,13 +405,13 @@ class Bullet {
     for (let bullet of this.world.bullets) {
       //If colliding with a this on different team, that it hasn't already been hit by and that still exists
       if (
-        this.collides &&
-        !this.remove &&
-        bullet instanceof Deflection &&
-        bullet.collides &&
-        this.bounceable && // don't deflect deflections
-        bullet.entity.team !== this.entity.team &&
-        bullet.collidesWith(this) //check collisions last for performance reasons
+        this.collides
+        && !this.remove
+        && bullet instanceof Deflection
+        && bullet.collides
+        && this.bounceable // don't deflect deflections
+        && bullet.entity.team !== this.entity.team
+        && bullet.collidesWith(this) //check collisions last for performance reasons
       ) {
         bullet.bulbonk(this);
         if (!bullet.silent) {

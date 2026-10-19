@@ -17,7 +17,17 @@ function wrapWords(input = "", maxChars = 100) {
   lines.push(currentLine);
   return lines
     .filter((x) => x.length > 0)
-    .map(x => x.trim())
+    .map((x) => x.trim())
     .join("\n")
     .trim();
+}
+
+function truncate(txt, maxLen) {
+  const t = `${txt}`;
+  return t.length > maxLen ? `${t.substring(0, maxLen - 1)}…` : t;
+}
+
+function lineTruncate(txt, maxLines) {
+  const t = `${txt}`.split(/\r?\n|\r|\n/);
+  return t.length > maxLines ? t.slice(0, maxLines).join("\n") + "…" : txt;
 }

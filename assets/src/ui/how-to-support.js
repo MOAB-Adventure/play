@@ -121,7 +121,7 @@ createUIComponent(
   300,
   "none",
   null,
-  "Later in the game, in the upgrades menu, you can buy a useful movement upgrade: the Booster.\n Once it has been bought, you gain the ability to dash by pressing {{boost}}.\nThis dash will push other entities, but will not grant any sort of damage reduction.",
+  "Later in the game, in the upgrades menu, you can buy a useful movement upgrade: the Booster.\n Once it has been bought, you gain the ability to dash by pressing {{boost}}.\nThis dash will push other entities and will grant immunity to box collision damage, but will not protect against bullets or lasers.",
   true,
   24
 );

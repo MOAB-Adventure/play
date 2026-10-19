@@ -1,4 +1,4 @@
- Registry.vfx.add("fire", {
+Registry.vfx.add("fire", {
   type: "vfx.particle",
   cone: 360,
   particle: {
@@ -407,4 +407,131 @@ Registry.vfx.add("gravity", {
     colourFrom: [255, 0, 255, 100],
     colourTo: [0, 255, 255, 0],
   },
+});
+
+Registry.vfx.add("soul-boost-impact", {
+  type: "vfx.multi",
+  effects: [
+    {
+      type: "vfx.particle",
+      cone: 360,
+      particle: {
+        //All
+        lifetime: 30,
+        speed: 5,
+        decel: -0.15,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 20,
+        widthTo: 10,
+        heightFrom: 50,
+        heightTo: 25,
+        colourFrom: [255, 255, 255, 255],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 30,
+      particle: {
+        //All
+        lifetime: 45,
+        speed: 10,
+        decel: -0.15,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 20,
+        widthTo: 10,
+        heightFrom: 40,
+        heightTo: 20,
+        colourFrom: [255, 255, 255, 255],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+    {
+      type: "vfx.wave",
+      particle: {
+        //All
+        lifetime: 15,
+        moveWithBackground: true,
+        radiusFrom: 20,
+        radiusTo: 250,
+        strokeFrom: 10,
+        strokeTo: 30,
+        colourFrom: [255, 255, 255, 128],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+  ],
+});
+
+Registry.vfx.add("soul-boost-burst", {
+  type: "vfx.multi",
+  effects: [
+    {
+      type: "vfx.particle",
+      cone: 360,
+      emissions: 3,
+      amount: 10,
+      particle: {
+        //All
+        lifetime: 30,
+        speed: 5,
+        decel: -0.15,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 20,
+        widthTo: 10,
+        heightFrom: 50,
+        heightTo: 25,
+        colourFrom: [255, 255, 255, 255],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 45,
+      emissions: 3,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 45,
+        speed: 10,
+        decel: -0.15,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 20,
+        widthTo: 10,
+        heightFrom: 40,
+        heightTo: 20,
+        colourFrom: [255, 255, 255, 255],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+    {
+      type: "vfx.particle",
+      cone: 45,
+      emissions: 3,
+      amount: 2,
+      particle: {
+        //All
+        lifetime: 45,
+        speed: 12.5,
+        decel: -0.15,
+        rotateSpeed: 0,
+        moveWithBackground: true,
+        shape: "rhombus",
+        widthFrom: 20,
+        widthTo: 10,
+        heightFrom: 40,
+        heightTo: 20,
+        colourFrom: [255, 255, 255, 255],
+        colourTo: [200, 0, 255, 0],
+      },
+    },
+  ],
 });
