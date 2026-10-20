@@ -3,23 +3,31 @@
 class SoundContainer {
   /** @type {AudioBuffer?} */
   #sound = null;
+  /** @type {AudioBuffer?} */
+  #loop = null;
   /** @type {"weapons" | "entities" | "music" | "other"} */
   #category = "none";
   #path;
+  #loopPath;
   /**
    * @param {string} path
    * @param {"weapons" | "entities" | "music" | "other"} category
    */
-  constructor(path, category = "none") {
+  constructor(path, category = "none", loop = null) {
     this.#path = path;
     this.#category = category;
+    this.#loopPath = loop;
   }
   async load(ctx) {
     this.#sound = await ctx.load(this.#path);
+    if (this.#loopPath) this.#loop = await ctx.load(this.#loopPath);
     return this.#sound != null;
   }
   get sound() {
     return this.#sound;
+  }
+  get loop() {
+    return this.#loop;
   }
   get category() {
     return this.#category;
@@ -42,6 +50,12 @@ class MASoundEngine {
   processed = this.context.createGain();
   /**@type {Registry?} */
   sounds = null;
+  // music
+  /** @type {SoundContainer?} */
+  #music = null;
+  /** @type {AudioBufferSourceNode?} */
+  #musicTrack = null;
+
   /** @type {Map<SoundContainer,AudioBufferSourceNode>} */
   #activeSounds = new Map();
   constructor() {
@@ -56,31 +70,87 @@ class MASoundEngine {
     this.processed.connect(this.muffler);
     this.unprocessed.connect(this.context.destination);
 
-    this.processed.gain.setValueAtTime(0, 0)
+    this.processed.gain.setValueAtTime(0, 0);
 
     this.muffler.connect(this.context.destination);
-    this.muffler.type = 'lowpass';
-    this.muffler.frequency.value = 800; // Reduce high frequencies (e.g., set to 800 Hz for a muffled sound)
+    this.muffler.type = "lowpass";
+    this.muffler.frequency.value = 800; // Reduce high frequencies
     this.muffler.Q.value = 1; // Sharpness of the filter (1 is standard)
   }
-  muffle(){
-    this.unprocessed.gain.setValueAtTime(0, 0)
-    this.processed.gain.setValueAtTime(1, 0)
+  muffle() {
+    this.unprocessed.gain.setValueAtTime(0, 0);
+    this.processed.gain.setValueAtTime(1, 0);
   }
-  unmuffle(){
-    this.unprocessed.gain.setValueAtTime(1, 0)
-    this.processed.gain.setValueAtTime(0, 0)
+  unmuffle() {
+    this.unprocessed.gain.setValueAtTime(1, 0);
+    this.processed.gain.setValueAtTime(0, 0);
   }
   async load(path) {
     try {
       let file = await fetch(path);
       let buf = await file.arrayBuffer();
       let sound = await this.context.decodeAudioData(buf);
-      console.log(`Loaded sound from ${path}`);
+      console.debug(` - Loaded sound from ${path}`);
       return sound;
     } catch (e) {
       return null;
     }
+  }
+  /**
+   * @param {SoundContainer | string} sound
+   */
+  setMusic(sound, isLoop = false) {
+    if (!sound) return;
+    if (typeof sound === "string") sound = this.sounds.get(sound);
+    // Now that it's a sound container, play it
+    if (this.#music === sound) return; // don't restart music
+
+    const bufnode = this.context.createBufferSource();
+    bufnode.buffer = isLoop && sound.loop ? sound.loop : sound.sound;
+    bufnode.connect(this.piecewiseVolume.music);
+    bufnode.onended = () => {
+      bufnode.disconnect();
+      this.#music = null;
+      this.#musicTrack = null;
+      this.setMusic(sound, true);
+    };
+
+    if (this.#musicTrack) {
+      this.#musicTrack.onended = function () {
+        this.disconnect();
+      };
+      this.#transitionTo(this.#musicTrack, bufnode, this.piecewiseVolume.music);
+    } else bufnode.start(0);
+
+    // Store the buffer node
+    this.#music = sound;
+    this.#musicTrack = bufnode;
+  }
+  stopMusic() {
+    if (this.#musicTrack) {
+      this.#musicTrack.onended = function () {
+        this.disconnect();
+      };
+      this.#musicTrack.stop();
+    }
+    this.#musicTrack = null;
+    this.#music = null;
+  }
+  /** @param {GainNode} gainNode  */
+  #transitionTo(from, to, gainNode, duration = 0.5) {
+    const now = this.context.currentTime,
+      g = gainNode.gain.value;
+
+    // Fade out
+    gainNode.gain.setValueAtTime(g, now);
+    gainNode.gain.linearRampToValueAtTime(0, now + duration);
+
+    from.stop(now + duration);
+
+    // Fade in
+    to.start(now + duration + 0.05);
+
+    gainNode.gain.setValueAtTime(g, now + duration + 0.05);
   }
   /**
    * @param {SoundContainer | string} sound
@@ -156,20 +226,24 @@ class MASoundEngine {
       bufnode.stop();
       bufnode.disconnect();
     } catch (e) {
-      console.warn("Failed to stop sound " + sound + ":", e);
+      console.warn(`Failed to stop sound:`, e);
     }
   }
   commit() {
     this.sounds = new Registry();
     Registry.sounds.forEach((i, n) =>
-      this.sounds.add(n, new SoundContainer(i.path, i.category ?? "other"))
+      this.sounds.add(n, new SoundContainer(i.path, i.category ?? "other", i.loop)),
     );
+    console.log(` - Prepared ${this.sounds.size} sounds for loading.`);
   }
   async loadAll() {
-    let i = setTimeout(() => console.error("Timeout!"), 3000);
-    await this.sounds.forEachAsync(async (name, item) => {
-      if (!(await item.load(this))) console.error("Failed to load " + name);
+    let i = setTimeout(() => console.error("Timeout!"), 3000),
+      c = 0;
+    const mc = this.sounds.size;
+    await this.sounds.forEachAsync(async (item, name) => {
+      if (await item.load(this)) c++;
     });
+    console.log(` - Loaded ${c}/${mc} sounds.`);
     clearTimeout(i);
   }
 }

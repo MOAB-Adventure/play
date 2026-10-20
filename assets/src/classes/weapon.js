@@ -3,19 +3,9 @@ class Weapon {
   minReload = 0;
   barrel = 0;
   parts = [];
-  shoot = {
-    bullet: null,
-    pattern: {
-      spread: 0,
-      amount: 1,
-      spacing: 0,
-    },
-  };
+  shoot = { bullet: null, pattern: { spread: 0, amount: 1, spacing: 0 } };
   //Upgrade info
-  cost = {
-    shards: 0,
-    bloonstones: 0,
-  };
+  cost = { shards: 0, bloonstones: 0 };
   /**@type {WeaponSlot} */
   slot = null;
   name = "Name goes here";
@@ -31,8 +21,6 @@ class Weapon {
   maxAccel = 2;
   #acceleration = 0;
   #accelerated = 0;
-  //Death Value
-  dvRatio = 0; //Amount damage increases by per DV
   //Sound
   fireSound = null;
   //Recoil/Rotation
@@ -40,12 +28,11 @@ class Weapon {
   rotate = true;
   maxRotation = -1;
   themeColour = [100, 100, 100];
+  //why only now?!?!
+  shootX = 0;
   constructor() {}
   get rotationRadians() {
     return (this.rotation / 180) * Math.PI;
-  }
-  getDVScale() {
-    return this.slot.entity.dv * this.dvRatio;
   }
   resetCD() {
     this._cooldown = this.minReload;
@@ -56,6 +43,7 @@ class Weapon {
       if ((p.recoilAnimations || p.passiveAnimations) && p.type === "part") p.type = "weapon-part";
       np.push(construct(p, Part));
     }
+    this.themeColour = col.convert(this.themeColour);
     this.parts = np;
   }
   draw() {
@@ -69,16 +57,11 @@ class Weapon {
       this.x = this.slot.entity.x + this.slot.posX;
       this.y = this.slot.entity.y + this.slot.posY;
       if (this.rotate && this.slot.entity.target) {
-        this.rotation = new Vector(this.slot.entity.target.x, this.slot.entity.target.y).subXY(
-          this.x,
-          this.y,
-        ).angle;
+        this.rotation = new Vector(this.slot.entity.target.x, this.slot.entity.target.y).subXY(this.x, this.y).angle;
         //If there is a rotation confinement
         if (this.maxRotation >= 0) {
-          if (this.rotation > this.maxRotation + this.slot.entity.direction)
-            this.rotation = this.maxRotation + this.slot.entity.direction; //Constrain positively
-          if (this.rotation < -this.maxRotation + this.slot.entity.direction)
-            this.rotation = -this.maxRotation + this.slot.entity.direction; //Constrain negatively
+          if (this.rotation > this.maxRotation + this.slot.entity.direction) this.rotation = this.maxRotation + this.slot.entity.direction; //Constrain positively
+          if (this.rotation < -this.maxRotation + this.slot.entity.direction) this.rotation = -this.maxRotation + this.slot.entity.direction; //Constrain negatively
         }
       } else {
         this.rotation = this.slot.entity.direction;
@@ -88,7 +71,7 @@ class Weapon {
     if (this._cooldown > 0) {
       this._cooldown--;
     }
-    this.parts.forEach((x) => x.tick()); //Tick all parts
+    this.parts.forEach(x => x.tick()); //Tick all parts
   }
   getAcceleratedReloadRate() {
     if (this.#acceleration <= -1 || this.#acceleration > this.maxAccel) return this.reload; //If bad acceleration then ignore it
@@ -125,9 +108,10 @@ class Weapon {
 
       if (this.recoil) this.slot.entity.knock(this.recoil, this.rotation + 180);
 
+      let v = new Vector(this.x, this.y).add(new DirectionVector(this.rotation, this.shootX));
       patternedBulletExpulsion(
-        this.x,
-        this.y,
+        v.x,
+        v.y,
         this.shoot?.bullet ?? {},
         this.shoot?.pattern?.amount ?? 1,
         this.rotation + (this.shoot?.pattern?.offset ?? 0),
@@ -137,23 +121,12 @@ class Weapon {
         this.slot.entity,
         this,
       );
-      this.parts.forEach((x) => x.fire && x.fire()); //Tick all parts
+      this.parts.forEach(x => x.fire && x.fire()); //Tick all parts
     }
   }
 }
 
-function patternedBulletExpulsion(
-  x,
-  y,
-  bulletToSpawn,
-  amount = 1,
-  direction = 0,
-  spread = 0,
-  spacing = 0,
-  world,
-  entity,
-  source,
-) {
+function patternedBulletExpulsion(x, y, bulletToSpawn, amount = 1, direction = 0, spread = 0, spacing = 0, world, entity, source, preTick = false) {
   //Derives most of its code from `Weapon.fire()`
   //universal mode: a c t i v a t e
   //Max difference in direction
@@ -166,7 +139,8 @@ function patternedBulletExpulsion(
     let bulletToFire = bullet(bulletToSpawn);
     //Put the bullet in position
     bulletToFire.pos = new Vector(x, y);
-    bulletToFire.direction = direction; //do the offset
+    if (bulletToSpawn.absdir !== undefined) bulletToFire.direction = bulletToSpawn.absdir;
+    else bulletToFire.direction += direction; //do the offset
     //Apply uniform spread
     bulletToFire.direction += currentAngle;
     currentAngle += spacing;
@@ -178,5 +152,6 @@ function patternedBulletExpulsion(
     bulletToFire.source = source;
     //Spawn it in
     world.bullets.push(bulletToFire);
+    if (preTick) bulletToFire.step(1);
   }
 }

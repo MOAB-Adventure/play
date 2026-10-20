@@ -1,13 +1,13 @@
 class PointBullet extends Bullet {
   #moved = false; //If the bullet has teleported to the target entity or not.
-  hitColour = [255, 255, 0];
+  hitColour = col.red | col.green;
   hitColourTo = -1;
   init() {
     this.speed = 0; //Remove speed
+    this.hitColour = col.convert(this.hitColour);
     if (this.hitColourTo === -1) {
-      this.hitColourTo = this.hitColour.slice(0); //Copy colour
-      this.hitColourTo[3] = 0; //Add alpha
-    }
+      this.hitColourTo = col.hide(this.hitColour);
+    } else this.hitColourTo = col.convert(this.hitColourTo);
   }
   step(dt) {
     //Move if not already done so
@@ -54,8 +54,8 @@ class PointBullet extends Bullet {
         distance,
         distance,
         0,
-        true
-      )
+        true,
+      ),
     );
   }
   hitEffect() {
@@ -77,7 +77,7 @@ class PointBullet extends Bullet {
         0,
         this.hitSize * 40,
         0,
-        true
+        true,
       ),
       new ShapeParticle(
         this.x,
@@ -94,7 +94,7 @@ class PointBullet extends Bullet {
         0,
         this.hitSize * 25,
         0,
-        true
+        true,
       ),
       new WaveParticle(
         this.x,
@@ -106,8 +106,8 @@ class PointBullet extends Bullet {
         this.hitColourTo,
         0,
         this.hitSize * 3,
-        true
-      )
+        true,
+      ),
     );
   }
 }

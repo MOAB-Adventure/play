@@ -1,7 +1,7 @@
 class Missile extends Bullet {
   target = null;
-  trailColour = [255, 255, 100];
-  trailColourTo = [255, 0, 0];
+  trailColour = col.from(255, 255, 100, );
+  trailColourTo = col.red;
   flameLength = 200;
   trail = true;
   trailInterval = -1;

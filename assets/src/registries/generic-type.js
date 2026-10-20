@@ -29,6 +29,7 @@ Registry.genericType.add("point-bullet", PointBullet);
 Registry.genericType.add("chained-bullet", ChainedBullet);
 Registry.genericType.add("radiation-zone", RadiationZone);
 Registry.genericType.add("deflection", Deflection);
+Registry.genericType.add("arc-deflection", ArcDeflection);
 Registry.genericType.add("shield", Shield);
 Registry.genericType.add("shield-wall", ShieldWall);
 //Boss Actions

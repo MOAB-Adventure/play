@@ -7,7 +7,7 @@ class Part {
   rotation = 0;
   width = 0;
   height = 0;
-  colour = [200, 200, 200];
+  colour = col.mono(200);
 
   get rotationRadians() {
     return (this.rotation / 180) * Math.PI;
@@ -38,12 +38,14 @@ class Part {
     } else {
       //If it isn't, draw a rectangle
       push();
-      fill(...this.colour);
+      col.fill(this.colour);
       rotatedShape("rect", finalPos.x, finalPos.y, this.width, this.height, radians(angle));
       pop();
     }
   }
-  init() {}
+  init() {
+    this.colour = col.convert(this.colour);
+  }
   tick() {}
 }
 
@@ -84,6 +86,7 @@ class WeaponPart extends Part {
     return totalOffset;
   }
   init() {
+    super.init();
     //For each index of charge animation
     for (let i = 0; i < this.chargeAnimations.length; i++) {
       this.chargeAnimations[i] = construct(this.chargeAnimations[i], PartAnimation); //Override with constructed version

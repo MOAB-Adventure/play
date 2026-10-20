@@ -13,7 +13,7 @@ class TextParticle extends ShapeParticle {
     sizeTo,
     rotateSpeed,
     moveWithBackground = false,
-    useOCR = false
+    useOCR = false,
   ) {
     super(
       x,
@@ -30,7 +30,7 @@ class TextParticle extends ShapeParticle {
       sizeFrom,
       sizeTo,
       rotateSpeed,
-      moveWithBackground
+      moveWithBackground,
     );
     this.text = text;
     this.useOCR = useOCR;
@@ -40,14 +40,14 @@ class TextParticle extends ShapeParticle {
   }
   step(dt) {
     if (this.lifetime >= dt) {
+      const lf = this.calcLifeFract();
       //Interpolate size
-      this.size =
-        this.sizeFrom * this.calcLifeFract() +
-        this.sizeTo * (1 - this.calcLifeFract());
+      this.size = this.sizeFrom * lf + this.sizeTo * (1 - lf);
+      this.colour = col.in2rp(this.colourFrom, this.colourTo, 1 - lf);
       //Move
       this.moveTo(
         this.x + this.speed * p5.Vector.fromAngle(this.direction).x * dt,
-        this.y + this.speed * p5.Vector.fromAngle(this.direction).y * dt
+        this.y + this.speed * p5.Vector.fromAngle(this.direction).y * dt,
       );
       //Move with BG
       if (this.moveWithBackground) this.x -= game.player.speed;
@@ -72,7 +72,7 @@ class TextParticle extends ShapeParticle {
     noStroke();
     fill(255);
     //Interpolate colour
-    fill(...blendColours(this.colourFrom, this.colourTo, this.calcLifeFract()));
+    col.fill(this.colour);
     //turn particle
     translate(this.x, this.y);
     rotate(this.direction + this._rotOffset);

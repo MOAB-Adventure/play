@@ -8,19 +8,28 @@ class Deflection extends Bullet {
 
   // sizing
   growth = 15; // hitsize increase per frame
+  falloff = 0; // growth falloff amount per frame: 0.01 = multiplies by 0.99 every frame
 
-  colour = [50, 255, 255, 150];
-  colourTo = [50, 255, 255, 0];
-  trailColour = [0, 255, 255, 255];
-  trailColourTo = [0, 255, 255, 50];
+  colour = col.from(50, 255, 255, 150);
+  colourTo = col.from(50, 255, 255, 0);
+  trailColour = col.from(0, 255, 255, 255);
+  trailColourTo = col.from(0, 255, 255, 50);
   trail = false;
 
   trailWidth = 10;
+  hitSize = 0;
 
   bounceable = false;
+  followSource = true;
   init() {
     super.init();
+    this.colour = col.convert(this.colour);
+    this.colourTo = col.convert(this.colourTo);
+    this.trailColour = col.convert(this.trailColour);
+    this.trailColourTo = col.convert(this.trailColourTo);
     this.maxLife = this.lifetime;
+
+    this.fragOffset += this.hitSize + this.growth * this.lifetime;
   }
   step(dt) {
     this.sound();
@@ -35,9 +44,10 @@ class Deflection extends Bullet {
       } else {
         this.lifetime -= dt;
         this.hitSize += this.growth;
+        if (this.falloff) this.growth *= 1 - this.falloff;
       }
       this.checkEntities();
-      this.pos = new Vector(this.entity.x, this.entity.y);
+      if (this.followSource) this.pos = new Vector(this.entity.x, this.entity.y);
     }
   }
   checkEntities() {
@@ -64,23 +74,108 @@ class Deflection extends Bullet {
   }
   bonk(entity) {
     let d = this.pos.directionTo(entity.x, entity.y);
-    entity.knock(this.growth, d.angle, 0); //Knock with size change but more
+    entity.knock(this.growth, d.angle, 0, undefined, undefined, false); //Knock with size change but more
+
+    this.onHit(entity);
   }
   /**@param {Bullet} bullet  */
   bulbonk(bullet) {
     let d = this.pos.directionTo(bullet.x, bullet.y);
-    bullet.direction = d.angle;
+    bullet.direction = this.growth > 0 ? d.angle : -d.angle;
     bullet.entity = this.entity;
     bullet.step(1);
     if (bullet instanceof Missile) bullet.targetType = "nearest";
   }
   draw() {
     push();
-    let lf = this.lifetime / this.maxLife;
-    fill(...blendColours(this.colour, this.colourTo, lf));
-    stroke(...blendColours(this.trailColour, this.trailColourTo, lf));
+    const lf = this.lifetime / this.maxLife;
+    col.fill(col.in2rp(this.colour, this.colourTo, 1 - lf));
+    col.stroke(col.in2rp(this.trailColour, this.trailColourTo, 1 - lf));
     strokeWeight(this.trailWidth);
     circle(this.x, this.y, this.hitSize * 2);
+    pop();
+  }
+  //On top of damage
+  onHit(entity) {
+    const d2 = this.pos.directionTo(entity.x, entity.y).angle;
+    //Always spawn hit bullets
+    patternedBulletExpulsion(
+      entity.x,
+      entity.y,
+      this.hitBullet,
+      this.hitNumber,
+      d2 + this.hitDirection,
+      this.hitSpread,
+      this.hitSpacing,
+      this.world,
+      this.entity,
+      this.source,
+    );
+    //If dead, spawn destroy bullets
+    if (entity.dead) {
+      patternedBulletExpulsion(
+        entity.x,
+        entity.y,
+        this.destroyBullet,
+        this.destroyNumber,
+        d2 + this.destroyDirection,
+        this.destroySpread,
+        this.destroySpacing,
+        this.world,
+        this.entity,
+        this.source,
+      );
+    }
+  }
+}
+// deflection but it's directional
+class ArcDeflection extends Deflection {
+  arc = 10;
+  get arcRad() {
+    return (this.arc / 180) * Math.PI;
+  }
+  checkEntities() {
+    for (let entity of this.world.entities) {
+      //If colliding with a this on different team, that it hasn't already been hit by and that still exists
+      if (
+        this.collides &&
+        !this.remove &&
+        entity.team !== this.entity.team &&
+        entity.bounceable && // only bonk boxes or certain bosses
+        this.collidesWith(entity) //check collisions last for performance reasons
+      ) {
+        this.bonk(entity);
+        if (this.status !== "none") {
+          entity.applyStatus(this.status, this.statusDuration);
+        }
+        if (!this.silent) {
+          if (!this.damaged.includes(entity)) SoundCTX.play(entity.hitSound);
+          SoundCTX.play(this.hitSound);
+        }
+        this.damaged.push(entity);
+      }
+    }
+  }
+  collidesWith(obj) {
+    return (
+      super.collidesWith(obj) &&
+      Math.abs(this.directionTo(obj.x, obj.y).angle - this.direction) <= this.arc
+    );
+  }
+  draw() {
+    push();
+    const lf = this.lifetime / this.maxLife;
+    col.fill(col.in2rp(this.colour, this.colourTo, 1 - lf));
+    col.stroke(col.in2rp(this.trailColour, this.trailColourTo, 1 - lf));
+    strokeWeight(this.trailWidth);
+    arc(
+      this.x,
+      this.y,
+      this.hitSize * 2,
+      this.hitSize * 2,
+      this.directionRad - this.arcRad,
+      this.directionRad + this.arcRad,
+    );
     pop();
   }
 }
@@ -90,12 +185,14 @@ class Shield extends Deflection {
   strength = 100;
   maxStrength = 100;
 
+  // Flat reduction to the damage this shield takes.
+  damageReduction = 0;
+
   _pulse = 0;
-  colour = [50, 255, 255, 0];
-  colourTo = [50, 255, 255, 150];
-  trailColour = [0, 255, 255, 50];
-  trailColourTo = [0, 255, 255, 255];
-  hitSize = 0;
+  colour = col.from(50, 255, 255, 0);
+  colourTo = col.from(50, 255, 255, 150);
+  trailColour = col.from(0, 255, 255, 50);
+  trailColourTo = col.from(0, 255, 255, 255);
   init() {
     super.init();
     this.maxStrength = this.strength;
@@ -105,8 +202,9 @@ class Shield extends Deflection {
     //Not if dead
     if (!this.remove) {
       this.intervalTick();
+      if (this.entity?.dead) this.remove = true;
       //Tick lifetime
-      if (this.lifetime <= 0 || this.entity.dead) {
+      if (this.lifetime <= 0) {
         if (this.strength <= 0) {
           this.remove = true;
           return;
@@ -126,9 +224,10 @@ class Shield extends Deflection {
   }
   draw() {
     push();
-    let lf = this.lifetime / this.maxLife;
-    fill(...blendColours(this.colour, this.colourTo, lf));
-    stroke(...blendColours(this.trailColour, this.trailColourTo, lf));
+    const lf = this.lifetime / this.maxLife;
+    if (this.lifetime <= 0) col.fill(col.in2rp(this.colour, this.colourTo, 1 - lf));
+    else noFill();
+    col.stroke(col.in2rp(this.trailColour, this.trailColourTo, 1 - lf));
     strokeWeight(this.trailWidth);
     circle(this.x, this.y, this.hitSize * 2);
     if (this._pulse > 0) {
@@ -143,12 +242,19 @@ class Shield extends Deflection {
     //Knock with size change but even more
     entity.knock(this.growth, d, 0);
     Timer.main.repeat(() => entity.knock(this.growth, d, 0), entity.shieldReboundOverride || 5);
-    this.strength -= entity.shieldDamageOverride || entity.health;
+    this.strength -= Math.max(
+      (entity.shieldDamageOverride || entity.health) - this.damageReduction,
+      0,
+    );
+    this.onHit(entity);
   }
   /**@param {Bullet} bullet  */
   bulbonk(bullet) {
     super.bulbonk(bullet);
-    this.strength -= bullet.damage.reduce((p, c) => p + c.amount, 0);
+    this.strength -= Math.max(
+      bullet.damage.reduce((p, c) => p + c.amount, -this.damageReduction),
+      0,
+    );
   }
 }
 class ShieldWall extends Shield {
@@ -187,9 +293,9 @@ class ShieldWall extends Shield {
   }
   draw() {
     push();
-    let lf = this.lifetime / this.maxLife;
-    fill(...blendColours(this.colour, this.colourTo, lf));
-    stroke(...blendColours(this.trailColour, this.trailColourTo, lf));
+    const lf = this.lifetime / this.maxLife;
+    col.fill(col.in2rp(this.colour, this.colourTo, 1 - lf));
+    col.stroke(col.in2rp(this.trailColour, this.trailColourTo, 1 - lf));
     strokeWeight(this.trailWidth);
     rect(this.x, this.y, this.width, 1100);
     if (this._pulse > 0) {
@@ -206,7 +312,8 @@ class ShieldWall extends Shield {
   }
   /**@param {Bullet} bullet  */
   bulbonk(bullet) {
-    if (bullet.x < this.x) bullet.direction = 180; //if to left, reflect left
+    if (bullet.x < this.x)
+      bullet.direction = 180; //if to left, reflect left
     else if (bullet.x > this.x) bullet.direction = 0; //if to right, reflect right
     bullet.entity = this.entity;
     bullet.step(1);

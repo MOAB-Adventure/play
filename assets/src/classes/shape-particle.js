@@ -26,8 +26,9 @@ class ShapeParticle {
     this.decel = decel;
     this.shape = shape;
     this.remove = false;
-    this.colourFrom = colourFrom;
-    this.colourTo = colourTo;
+    this.colourFrom = col.convert(colourFrom);
+    this.colourTo = col.convert(colourTo);
+    this.colour = this.colourFrom;
     this.maxLifetime = lifetime;
     this.sizeXFrom = sizeXFrom;
     this.sizeXTo = sizeXTo;
@@ -47,14 +48,16 @@ class ShapeParticle {
     }
   }
   step(dt) {
+    const lf = this.calcLifeFract()
     if (this.lifetime >= dt) {
       //Interpolate size
       this.sizeX =
-        this.sizeXFrom * this.calcLifeFract() +
-        this.sizeXTo * (1 - this.calcLifeFract());
+        this.sizeXFrom * lf +
+        this.sizeXTo * (1 - lf);
       this.sizeY =
-        this.sizeYFrom * this.calcLifeFract() +
-        this.sizeYTo * (1 - this.calcLifeFract());
+        this.sizeYFrom * lf +
+        this.sizeYTo * (1 - lf);
+        this.colour = col.in2rp(this.colourFrom, this.colourTo, 1-lf)
       //Move
       let v = Vector.fromAngleRad(this.direction).scale(this.speed * dt)
       this.moveTo(
@@ -89,7 +92,7 @@ class ShapeParticle {
     noStroke();
     fill(255);
     //Interpolate colour
-    fill(...blendColours(this.colourFrom, this.colourTo, this.calcLifeFract()));
+    col.fill(this.colour);
     //Draw the particle
     rotatedShape(
       this.shape,

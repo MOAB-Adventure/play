@@ -18,7 +18,8 @@ Registry.sounds.add("wood-break", { path: "assets/sound/wood-break.wav", categor
 Registry.sounds.add("player-death", { path: "assets/sound/player-death.ogg", category: "entities" });
 Registry.sounds.add("boss-death", { path: "assets/sound/boss-death.mp3", category: "entities" });
 // Soundtrack
-Registry.sounds.add("sky-high", { path: "assets/sound/music/sky-high.wav", category: "music" });
+Registry.sounds.add("sky-high", { path: "assets/sound/music/sky-high-intro.mp3", loop: "assets/sound/music/sky-high.mp3", category: "music" });
+Registry.sounds.add("robo-monkey", { path: "assets/sound/music/robo-monkey-intro.wav", loop: "assets/sound/music/robo-monkey.wav", category: "music" });
 Registry.sounds.add("deconstruction", { path: "assets/sound/music/deconstruction.mp3", category: "music" });
 // Aim / Telegraphing
 Registry.sounds.add("whirr", { path: "assets/sound/whirr.wav", category: "entities" });

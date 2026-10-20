@@ -92,7 +92,7 @@ createUIComponent(
   "How to Attack",
   false,
   60
-).textColour = "#fff";
+).textColour = col.white;
 
 /////////////////////////////////////////////////////
 

@@ -46,18 +46,18 @@ createGamePropertySelector(
 );
 
 const rainbowCols = [
-    [255, 0, 0],
-    [255, 255, 0],
-    [0, 255, 0],
-    [0, 0, 255],
-    [192, 0, 255],
+    col.red,
+    col.red | col.green,
+    col.green,
+    col.blue,
+    col.from(192, 0, 255),
   ],
   monoCols = [
-    [0, 0, 0],
-    [64, 64, 64],
-    [128, 128, 128],
-    [192, 192, 192],
-    [255, 255, 255],
+    col.black,
+    col.mono(64),
+    col.mono(128),
+    col.mono(192),
+    col.white,
   ];
 createGamePropertySelector(
   ["options.ui"],
@@ -132,5 +132,5 @@ createUIComponent(["options.ui"], [], 1500, 700, 75, 75, "none", () => {
     game.effects = 1;
     UIComponent.setCondition("hidewarn:false");
     esl._current = 1;
-  }).backgroundColour = [0, 0, 0];
+  }).backgroundColour = col.black;
 UIComponent.alignLeft(Object.defineProperty(createUIComponent(["options.ui"], [], 1550, 700, 0, 0, "none",null,"",true,40), "text", {get:() => roundNum(game.effects * 100, 1)+"%"}));

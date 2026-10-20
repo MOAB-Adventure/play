@@ -137,12 +137,12 @@ function regenSaveDescrs() {
     slot.converter.getActivity = () => existing && !valid;
     slot.deleter.text = existing ? "Delete" : "...";
     if (!existing) {
-      slot.info.outlineColour = [50, 50, 50];
-      slot.deleter.outlineColour = [50, 50, 50];
+      slot.info.outlineColour = col.mono(50);
+      slot.deleter.outlineColour = col.mono(50);
     }
   });
   saveSlotSel.forEach((c, i) =>
-    UIComponent.setOutlineColour(c, Serialiser.get("save." + i) ? [150, 0, 0] : [50, 50, 50]),
+    UIComponent.setOutlineColour(c, Serialiser.get("save." + i) ? col.from(150, 0, 0) : col.mono(50)),
   );
 }
 regenSaveDescrs();

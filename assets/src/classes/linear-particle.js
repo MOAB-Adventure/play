@@ -36,7 +36,7 @@ class LinearParticle extends Particle {
       push();
       noFill();
       //Interpolate colour
-      stroke(this.colour);
+      col.stroke(this.colour);
       strokeWeight(this.stroke);
       //Draw the particle
       this.actualDraw();

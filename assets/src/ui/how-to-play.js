@@ -11,7 +11,7 @@ createUIComponent(
   },
   "Return",
   false,
-  60
+  60,
 ).isBackButton = true;
 
 createUIComponent(
@@ -27,7 +27,7 @@ createUIComponent(
   },
   ">",
   false,
-  60
+  60,
 );
 
 createUIImageComponent(["how-to-play"], [], 400, 300, 230, 150, null, "blimp.moab", false);
@@ -50,7 +50,7 @@ for (let b = 0; b < 7; b++)
     75,
     null,
     tru(0.2) ? "box.metal" : "box.wood",
-    false
+    false,
   );
 createUIImageComponent(["how-to-play"], [], 800, 400, 500, 500, null, "ui.shoot", false).angle =
   Math.PI / 2;
@@ -58,9 +58,9 @@ createUIComponent(["how-to-play"], [], 800, 500, 150, 75, "none", null, "LMB", t
 
 // Fake healthbar
 createUIComponent(["how-to-play"], [], 1650, 110, 0, 0, "none", null, "Bad", true, 60).textColour =
-  "#fff";
+  col.white;
 createUIComponent(["how-to-play"], [], 1650, 150, 0, 0, "none", null, "v", true, 60).textColour =
-  "#fff";
+  col.white;
 UIComponent.invert(createUIComponent(["how-to-play"], [], 1650, 220, 450, 62.5, "right"));
 const fakehp = {
   get health() {
@@ -82,8 +82,8 @@ UIComponent.invert(
     undefined,
     20,
     fakehp,
-    [255, 0, 0]
-  )
+    col.from(255, 0, 0),
+  ),
 );
 
 createUIComponent(
@@ -97,7 +97,7 @@ createUIComponent(
   null,
   "Movement controls are shown to the left. Click the left mouse button to fire. Dodge or shoot the boxes, don't let your health hit zero (illustrated on right).\nBoxes will spawn on the right, and must be dodged or shot.",
   true,
-  24
+  24,
 );
 ///////////////////////////////////////////////////////////////
 createUIImageComponent(
@@ -109,7 +109,7 @@ createUIImageComponent(
   336,
   null,
   "boss.monkey-ace",
-  false
+  false,
 ).angle = 1;
 createUIImageComponent(["how-to-play"], [], 120, 500, 100, 100, null, "ui.clock", false);
 createUIComponent(
@@ -123,7 +123,7 @@ createUIComponent(
   null,
   "The boss timer on the top-right will constantly go down. When it hits zero, the next boss will spawn. There are 10 bosses per zone, and the final one is much harder than the others.",
   true,
-  24
+  24,
 );
 
 ///////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ createUIComponent(
   null,
   "Bosses cannot simply be dodged, they must be shot. Some bosses may have minions, which will leave when there are no more bosses left.",
   true,
-  24
+  24,
 );
 
 ////////////////////////////////////////////////////
@@ -155,5 +155,5 @@ createUIComponent(
   null,
   "How to Play",
   false,
-  60
-).textColour = "#fff";
+  60,
+).textColour = col.white;

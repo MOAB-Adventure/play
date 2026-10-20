@@ -1,6 +1,7 @@
 class Registry {
-  ///Internal Map for holding the registry items.
+  /** Internal Map for holding the registry items. @type  {Map<string,any>}*/
   #content = new Map();
+  /** @readonly */
   get size() {
     //Get size of the internal Map.
     return this.#content.size;
@@ -8,6 +9,7 @@ class Registry {
   //Basic registries for holding objects used by the base game.
   static weaponType = new this();
   static bulletType = new this();
+  static modifierTypes = new this();
   static genericType = new this();
   static weapons = new this();
   static images = new this();
@@ -21,6 +23,7 @@ class Registry {
   static difficulties = new this();
   static slots = new this();
   static currency = new this();
+  static infusions = new this();
   /** Adds an item to registry.
    * @param {string} name Registry name of item. This is not case sensitive.
    * @param {*} item Item to add to registry.
@@ -33,9 +36,7 @@ class Registry {
     //Throw an error if the item already exists.
     if (this.has(name))
       throw new SyntaxError(
-        "Item " +
-          name +
-          " already exists in registry! Consider using a different name."
+        `Item ${name} already exists in registry! Consider using a different name.`,
       );
     //Add to internal Map
     this.#content.set(name, item);
@@ -62,9 +63,7 @@ class Registry {
     //Throw an error if the item doesn't exist.
     if (!this.has(name))
       throw new ReferenceError(
-        "Item " +
-          name +
-          " does not exist in registry! Consider checking your spelling."
+        `Item ${name} does not exist in registry! Consider checking your spelling.`,
       );
     //Return item, if it exists.
     return this.#content.get(name);
@@ -80,9 +79,7 @@ class Registry {
     //Throw an error if the item doesn't exist.
     if (!this.has(name))
       throw new ReferenceError(
-        "Item " +
-          name +
-          " does not exist in registry! Consider checking your spelling."
+        `Item ${name} does not exist in registry! Consider checking your spelling.`,
       );
     //Get entry
     let current = this.get(name);
@@ -102,9 +99,7 @@ class Registry {
     //Throw an error if the item doesn't exist.
     if (!this.has(name))
       throw new ReferenceError(
-        "Item " +
-          name +
-          " does not exist in registry! Consider checking your spelling."
+        `Item ${name} does not exist in registry! Consider checking your spelling.`,
       );
     //Get current entry
     let current = this.get(name);
@@ -117,16 +112,17 @@ class Registry {
    */
   forEach(callback) {
     //Use built-in Map iterator
-    this.#content.forEach((element, name) => {
-      //Discard return value
-      void callback(element, name);
-    });
+    for (const [key, value] of this.#content) {
+      void callback(value, key);
+    }
   }
   /**
    * Performs a function on each item in registry asynchronously.
-   * @param {(name: string, item) => void} callback Function to perform on each item.
+   * @param {(item, name: string) => Promise<void>} callback Function to perform on each item.
    */
-  async forEachAsync(callback){
-    this.#content.forEach(async (value, key) => await void callback(key, value))
+  async forEachAsync(callback) {
+    for (const [key, value] of this.#content) {
+      void (await callback(value, key));
+    }
   }
 }

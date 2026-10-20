@@ -29,11 +29,15 @@ class MAImageHandler {
   commit() {
     this.images = new Registry();
     Registry.images.forEach((i, n) => this.images.add(n, new ImageContainer(i.path)));
+    console.log(` - Prepared ${this.images.size} images for loading.`);
   }
   async load() {
-    await this.images.forEachAsync(async (name, item) => {
-      await item.load();
+    let i = 0;
+    const mi = this.images.size;
+    await this.images.forEachAsync(async (item, name) => {
+      if (await item.load()) i++;
     });
+    console.log(` - Loaded ${i}/${mi} images.`);
   }
 }
 
@@ -54,7 +58,8 @@ function drawImg(
 function rotatedImg(img = "error", x, y, width, height, angle, ...otherParameters) {
   ImageCTX.draw(img, x, y, width, height, angle, ...otherParameters);
   console.warn("Use of deprecated 'rotatedImg'");
-}class ImageContainer {
+}
+class ImageContainer {
   #image;
   #path;
   constructor(path) {
@@ -65,12 +70,16 @@ function rotatedImg(img = "error", x, y, width, height, angle, ...otherParameter
     this.#image = image;
   }
   async load() {
-    this.#image = await loadImage(this.#path);
-    console.log("Loaded image from " + this.#path);
-    return true;
+    try {
+      this.#image = await loadImage(this.#path);
+      console.debug(" - Loaded image from " + this.#path);
+      return true;
+    } catch (e) {
+      console.error(" - Could not load image: ", e);
+      return false;
+    }
   }
   get image() {
     return this.#image;
   }
 }
-

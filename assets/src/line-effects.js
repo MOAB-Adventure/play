@@ -75,6 +75,9 @@ class LineEmissionEffect extends LinearEmissionEffect {
     strokeFrom: 10,
     strokeTo: 0,
   };
+  init(){
+    col.autonorm(this.line);
+  }
   create(world, positions = [], impact = false) {
     repeat(this.amount, () => {
       this.getParticleArray(world, impact).push(

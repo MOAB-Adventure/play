@@ -8,7 +8,7 @@ const selector2 = {
   get(name) {
     let slot = Registry.slots.get(name);
     let option = this.option(name);
-    // console.log("slot "+name+" is " + option);
+    // console.log(`slot ${name} is ${option}`);
     return slot.variations ? slot.variations[option] : slot;
   },
   ap(ap) {
@@ -17,16 +17,21 @@ const selector2 = {
   booster() {
     return this.slot("booster");
   },
-  sp1() {
-    return this.slot("sp1");
+  sp(sp) {
+    return this.slot(`sp${sp}`);
   },
   slot(name) {
-    return new WeaponSlot(...this.get(name)?.upgrades ?? []);
+    // console.log("-> ", this.get(name));
+    return new WeaponSlot(...(this.get(name)?.upgrades ?? []));
   },
 
   /**utility to set slot choices */
   chooseAP(ap, val) {
     // console.log("setting "+`ap${ap}-slot:${val}`)
     UIComponent.setCondition(`ap${ap}-slot:${val}`);
+  },
+  chooseSP(sp, val) {
+    // console.log("setting "+`ap${ap}-slot:${val}`)
+    UIComponent.setCondition(`sp${sp}-slot:${val}`);
   },
 };

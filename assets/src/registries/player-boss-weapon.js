@@ -26,11 +26,7 @@ Registry.weapons.add("boxer", {
           levelScaling: 1.25,
         },
       ],
-      drawer: {
-        image: "box.metal",
-        width: 50,
-        height: 50,
-      },
+      drawer: { image: "box.metal", width: 50, height: 50 },
       trail: false,
       resetCooldownOnReturn: true,
       chainSegmentColour: "#00000000",
@@ -48,18 +44,8 @@ Registry.weapons.add("boxer", {
         multiHit: true,
         knockback: 10,
         trailColour: [255, 0, 0, 10],
-        drawer: {
-          image: "box.metal",
-          width: 50,
-          height: 5,
-        },
-        damage: [
-          {
-            type: "ballistic",
-            amount: 1.25,
-            levelScaling: 0.3125,
-          },
-        ],
+        drawer: { image: "box.metal", width: 50, height: 5 },
+        damage: [{ type: "ballistic", amount: 1.25, levelScaling: 0.3125 }],
       },
     },
     pattern: {},
@@ -86,22 +72,10 @@ Registry.weapons.add("chaingun", {
       hitSize: 8,
       trail: false,
       knockback: 4,
-      damage: [
-        {
-          type: "ballistic",
-          amount: 1,
-        },
-      ],
-      drawer: {
-        image: "bullet.normal",
-        width: 28,
-        height: 16,
-      },
+      damage: [{ type: "ballistic", amount: 1 }],
+      drawer: { image: "bullet.normal", width: 28, height: 16 },
     },
-    pattern: {
-      amount: 2,
-      spread: 5,
-    }, //Blank pattern
+    pattern: { amount: 2, spread: 5 }, //Blank pattern
   },
   parts: [
     {
@@ -112,41 +86,11 @@ Registry.weapons.add("chaingun", {
       height: 10,
       rotation: 0,
       image: false,
-      recoilAnimations: [
-        {
-          type: "recoil-animation",
-          duration: 5,
-          xOffset: -15,
-        },
-      ],
+      recoilAnimations: [{ type: "recoil-animation", duration: 5, xOffset: -15 }],
     },
-    {
-      type: "part",
-      x: 0,
-      y: 0,
-      width: 25,
-      height: 25,
-      rotation: 0,
-      image: false,
-    },
-    {
-      type: "part",
-      x: 17.5,
-      y: 0,
-      width: 10,
-      height: 15,
-      rotation: 0,
-      image: false,
-    },
-    {
-      type: "part",
-      x: -16.25,
-      y: 0,
-      width: 7.5,
-      height: 15,
-      rotation: 0,
-      image: false,
-    },
+    { type: "part", x: 0, y: 0, width: 25, height: 25, rotation: 0, image: false },
+    { type: "part", x: 17.5, y: 0, width: 10, height: 15, rotation: 0, image: false },
+    { type: "part", x: -16.25, y: 0, width: 7.5, height: 15, rotation: 0, image: false },
   ],
 }); //No visual
 
@@ -171,9 +115,7 @@ Registry.weapons.add("dissection", {
         fragDirection: 180,
         lifetime: 3,
         trail: false,
-        drawer: {
-          hidden: true,
-        },
+        drawer: { hidden: true },
         silent: true,
         fragBullet: {
           lifetime: 1,
@@ -181,9 +123,7 @@ Registry.weapons.add("dissection", {
           fragNumber: 1,
           trail: false,
           fragDirection: 180,
-          drawer: {
-            hidden: true,
-          },
+          drawer: { hidden: true },
           fragBullet: {
             lifetime: 15,
             speed: 75,
@@ -193,15 +133,8 @@ Registry.weapons.add("dissection", {
             trailColour: [255, 255, 255, 100],
             pierce: 2,
             knockback: 50,
-            damage: [
-              {
-                type: "ballistic",
-                amount: 20,
-              },
-            ],
-            drawer: {
-              hidden: true,
-            },
+            damage: [{ type: "ballistic", amount: 20 }],
+            drawer: { hidden: true },
             hitNumber: 3,
             hitSpread: 10,
             hitBullet: {
@@ -214,9 +147,7 @@ Registry.weapons.add("dissection", {
               trailColour: [255, 255, 255],
               trailColourTo: [255, 255, 0],
               pierce: 999,
-              drawer: {
-                hidden: true,
-              },
+              drawer: { hidden: true },
               silent: true,
             },
             destroyNumber: 3,
@@ -230,9 +161,7 @@ Registry.weapons.add("dissection", {
               trail: true,
               trailColour: [155, 0, 0],
               trailColourTo: [55, 0, 0],
-              drawer: {
-                hidden: true,
-              },
+              drawer: { hidden: true },
               silent: true,
               damage: [
                 {
@@ -256,9 +185,7 @@ Registry.weapons.add("dissection", {
                 speed: 5,
                 hitSize: 5,
                 trail: false,
-                drawer: {
-                  hidden: true,
-                },
+                drawer: { hidden: true },
                 silent: true,
                 damage: [
                   {
@@ -289,41 +216,11 @@ Registry.weapons.add("dissection", {
       height: 10,
       rotation: 0,
       image: false,
-      recoilAnimations: [
-        {
-          type: "recoil-animation",
-          duration: 5,
-          xOffset: -15,
-        },
-      ],
+      recoilAnimations: [{ type: "recoil-animation", duration: 5, xOffset: -15 }],
     },
-    {
-      type: "part",
-      x: 0,
-      y: 0,
-      width: 25,
-      height: 25,
-      rotation: 0,
-      image: false,
-    },
-    {
-      type: "part",
-      x: 17.5,
-      y: 0,
-      width: 10,
-      height: 15,
-      rotation: 0,
-      image: false,
-    },
-    {
-      type: "part",
-      x: -16.25,
-      y: 0,
-      width: 7.5,
-      height: 15,
-      rotation: 0,
-      image: false,
-    },
+    { type: "part", x: 0, y: 0, width: 25, height: 25, rotation: 0, image: false },
+    { type: "part", x: 17.5, y: 0, width: 10, height: 15, rotation: 0, image: false },
+    { type: "part", x: -16.25, y: 0, width: 7.5, height: 15, rotation: 0, image: false },
   ],
 }); //No visual
 
@@ -343,18 +240,8 @@ Registry.weapons.add("polariser", {
       hitSize: 15,
       pierce: 999,
       multiHit: true,
-      damage: [
-        {
-          type: "ballistic",
-          amount: 25,
-        },
-      ],
-      drawer: {
-        shape: "ellipse",
-        fill: "#a5a5a5ff",
-        width: 30,
-        height: 30,
-      },
+      damage: [{ type: "ballistic", amount: 25 }],
+      drawer: { shape: "ellipse", fill: "#a5a5a5ff", width: 30, height: 30 },
       trail: true,
       trailColour: [255, 0, 0, 16],
       trailColourTo: [0, 0, 255, 8],
@@ -405,12 +292,7 @@ Registry.weapons.add("polariser", {
           type: "chained",
           drawChain: false,
           collides: false,
-          drawer: {
-            shape: "ellipse",
-            fill: "#000",
-            width: 0,
-            height: 0,
-          },
+          drawer: { shape: "ellipse", fill: "#000", width: 0, height: 0 },
           speed: 10,
           lifetime: 300,
           pullAccel: 0.3,
@@ -755,5 +637,86 @@ Registry.weapons.add("polariser", {
       colour: [200, 200, 200],
       image: false,
     },
+  ],
+});
+
+Registry.weapons.add("nanolauncher", {
+  name: "Nanolauncher",
+  description:
+    "Shoots parasitic nanobot balls which latch on to enemies, draining their health, and giving it to you.\nBalls last up to 20 seconds.",
+  reload: 60,
+  shootX: 40,
+  fireSound: "shoot",
+  cost: { shards: 50, bloonstones: 0 },
+  themeColour: [0, 200, 255],
+  shoot: {
+    bullet: {
+      type: "missile",
+      lifetime: 120,
+      speed: 10,
+      updates: 3,
+      hitSize: 8,
+      targetType: "hovered",
+      turnSpeed: 2,
+      trail: true,
+      trailColour: [0, 200, 255],
+      trailColourTo: [0, 100, 255],
+      trailType: "linear",
+      trailInterval: 50,
+      sticky: true,
+      extraStickTime: 1200,
+      persistAfterUnstick: false,
+      intervalNumber: 1,
+      intervalTime: 90,
+      intervalBullet: {
+        lifetime: 1,
+        speed: 0,
+        hitSize: 20,
+        drawer: { hidden: true },
+        damage: [
+          {
+            type: "disassembly",
+            amount: 2,
+            area: 20,
+            sparkColour: [0, 200, 255],
+            sparkColourTo: [0, 100, 255],
+            waveColour: [0, 200, 255],
+          },
+        ],
+        hitNumber: 1,
+        hitBullet: {
+          type: "chained",
+          drawChain: false,
+          collides: false,
+          drawer: { shape: "ellipse", fill: "#00caff", width: 0, height: 0 },
+          speed: 10,
+          lifetime: 300,
+          pullAccel: 0.3,
+          updates: 2,
+          trailInterval: 20,
+          returnStatus: "nano-heal",
+          returnStatusDuration: 1,
+          trailColour: [0, 200, 255, 50],
+          trailColourTo: [0, 100, 255, 0],
+          trailLifeFactor: 0.2,
+          trailType: "linear",
+        },
+      },
+      damage: [{ type: "ballistic", amount: 2 }],
+      drawer: { shape: "circle", width: 28, height: 16, fill: "#00caff" },
+    },
+    pattern: {}, //Blank pattern
+  },
+  parts: [
+    {
+      type: "part",
+      x: 32.5,
+      width: 20,
+      height: 10,
+      recoilAnimations: [{ type: "recoil-animation", duration: 5, xOffset: -15 }],
+    },
+    { type: "part", width: 25, height: 25 },
+    { type: "part", x: 17.5, width: 10, height: 15 },
+    { type: "part", x: -16.25, width: 7.5, height: 15 },
   ],
 });

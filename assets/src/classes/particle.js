@@ -8,7 +8,7 @@ class Particle {
     lifetime = 30,
     speed = 4,
     decel = 0,
-    colours = [[255, 0, 0]],
+    colours = [col.red],
     rotateSpeed = 0,
     light = 0
   ) {
@@ -19,7 +19,7 @@ class Particle {
     this.lifetime = lifetime;
     this.decel = decel;
     this.remove = false;
-    this.colours = colours;
+    this.colours = colours.map(col.convert);
     this.colour = this.colours[0];
     this.maxLifetime = lifetime;
     this.rotateSpeed = rotateSpeed;
@@ -78,7 +78,7 @@ class Particle {
       this.movement(dt);
 
       //Colours
-      this.colour = colinterp(this.colours, 1 - lf);
+      this.colour = col.interp(this.colours, 1 - lf);
       //Lifetime
       this.lifetime -= dt;
     } else {
@@ -96,7 +96,7 @@ class Particle {
     push();
     noStroke();
     //Interpolate colour
-    fill(this.colour);
+    col.fill(this.colour);
     //Draw the particle
     this.actualDraw();
     pop();

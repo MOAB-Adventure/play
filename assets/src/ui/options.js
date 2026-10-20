@@ -105,6 +105,7 @@ function reloadCachedOptions() {
   /** @type {SerialisedGameOptions} */
   let opts = Serialiser.get("options");
   console.log("cached options", opts);
+  opts ??= {};
   game.control = opts.control ?? "keyboard";
   game.music = opts.music ?? true;
   game.reloadBarStyle = opts.reloadBarStyle ?? "radial";

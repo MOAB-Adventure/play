@@ -1,3 +1,4 @@
+/** Special boss tht changes the zone and gives souls when defeated. */
 class FinalBoss extends Boss {
   dv = 1500;
   destinationWorld = "";
@@ -26,8 +27,8 @@ class FinalBoss extends Boss {
                 0,
                 0,
                 "rect",
-                [255, 255, 255, 0],
-                [255, 255, 255, 255],
+                col.hide(col.white),
+                col.white,
                 1080,
                 1080,
                 1920,
@@ -52,23 +53,7 @@ class FinalBoss extends Boss {
       } else {
         //Create an effect as a warning, but don't wait
         this.world.particles.push(
-          new ShapeParticle(
-            960,
-            540,
-            0,
-            this.transportDelay,
-            0,
-            0,
-            "rect",
-            [255, 255, 255, 0],
-            [255, 255, 255, 255],
-            1080,
-            1080,
-            1920,
-            1920,
-            0,
-            false,
-          ),
+          new ShapeParticle(960, 540, 0, this.transportDelay, 0, 0, "rect", col.hide(col.white), col.white, 1080, 1080, 1920, 1920, 0, false),
         );
         Timer.main.do(() => {
           //win and save it
@@ -78,5 +63,7 @@ class FinalBoss extends Boss {
         }, this.transportDelay);
       }
     }
+    //Give souls
+    if (game.originalMode === "adventure") addSouls(++game.zone);
   }
 }

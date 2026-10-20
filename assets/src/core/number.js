@@ -5,7 +5,7 @@ const sizes = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
  * Does not round, but truncates instead, e.g. 12850 -> 1.28k
  */
 function shortenedNumber(num = 0, digits = 3) {
-  if(typeof num !== "number") num = 0;
+  if (typeof num !== "number") num = 0;
   let exponential = num.toExponential();
   //Split the first bit and the power of 10
   let parts = exponential.split("e");
@@ -42,7 +42,10 @@ function dynamicSort(property) {
     sortOrder = -1;
     property = property.substring(1);
   }
-  return (a, b) => (a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0) * sortOrder;
+  return (a, b) =>
+    (a[property] < b[property] ? -1
+    : a[property] > b[property] ? 1
+    : 0) * sortOrder;
 }
 
 /**
@@ -94,7 +97,7 @@ class Vector {
   }
   /** The length of the hypotenuse of the triangle formed by this vector's X- and Y-values as lengths. */
   get magnitude() {
-    return (this.#x ** 2 + this.#y ** 2) ** 0.5;
+    return Math.sqrt(this.#x * this.#x + this.#y * this.#y);
   }
   /**
    * Adds 2 vectors.
@@ -185,7 +188,7 @@ class Vector {
   rotateRad(angle) {
     return new Vector(
       this.#x * Math.cos(angle) - this.#y * Math.sin(angle),
-      this.#y * Math.cos(angle) + this.#x * Math.sin(angle)
+      this.#y * Math.cos(angle) + this.#x * Math.sin(angle),
     );
   }
   /**
@@ -253,7 +256,7 @@ class Vector {
   lerp(other, factor) {
     return new Vector(
       other.x * factor + this.#x * (1 - factor),
-      other.y * factor + this.#y * (1 - factor)
+      other.y * factor + this.#y * (1 - factor),
     );
   }
   multiLerp(other, divisions) {
@@ -264,7 +267,10 @@ class Vector {
     return a;
   }
   directionTo(x, y) {
-    return this.subXY(x, y).toDirectional().reversed();
+    return this.subXY(x, y).reversed().toDirectional();
+  }
+  reversed() {
+    return new Vector(-this.#x, -this.#y);
   }
 }
 /**Immutable direction vector. Stores direction and magnitude, rather than x and y values. */

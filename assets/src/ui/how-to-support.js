@@ -56,8 +56,8 @@ createUIImageComponent(
     "circle",
     true
   );
-  c.outlineColour = [50, 255, 255, 255];
-  c.backgroundColour = [50, 255, 255, 150];
+  c.outlineColour = col.from(50, 255, 255, 255);
+  c.backgroundColour = col.from(50, 255, 255, 150);
 }
 
 createUIComponent(
@@ -90,7 +90,7 @@ createUIComponent(
   "How to Support",
   false,
   60
-).textColour = "#fff";
+).textColour = col.white;
 
 /////////////////////////////////////////////////////
 createUIImageComponent(["how-to-support"], [], 720, 600, 300, 300, null, "ui.dash", false);
@@ -121,7 +121,7 @@ createUIComponent(
   300,
   "none",
   null,
-  "Later in the game, in the upgrades menu, you can buy a useful movement upgrade: the Booster.\n Once it has been bought, you gain the ability to dash by pressing {{boost}}.\nThis dash will push other entities, but will not grant any sort of damage reduction.",
+  "Later in the game, in the upgrades menu, you can buy a useful movement upgrade: the Booster.\n Once it has been bought, you gain the ability to dash by pressing {{boost}}.\nThis dash will push other entities and will grant immunity to box collision damage, but will not protect against bullets or lasers.",
   true,
   24
 );

@@ -79,11 +79,11 @@ class SelfDestructAction extends BossAction {
   damage = 100;
   damageRadius = 200;
   damageType = "explosion";
-  sparkColour = [255, 245, 215, 255]; //The colour the sparks start at
-  sparkColourTo = [255, 215, 0, 55]; //The colour the sparks go to
-  smokeColour = [100, 100, 100, 200]; //The colour the smoke starts at
-  smokeColourTo = [100, 100, 100, 0]; //The colour the smoke goes to
-  waveColour = [255, 128, 0, 0]; //The colour the wave ends at. It always starts white.
+  sparkColour = col.from(255, 245, 215, 255); //The colour the sparks start at
+  sparkColourTo = col.from(255, 215, 0, 55); //The colour the sparks go to
+  smokeColour = col.from(100, 100, 100, 200); //The colour the smoke starts at
+  smokeColourTo = col.from(100, 100, 100, 0); //The colour the smoke goes to
+  waveColour = col.from(255, 128, 0, 0); //The colour the wave ends at. It always starts white.
   blinds = false;
   blindOpacity = 0;
   blindDuration = 0;

@@ -5,23 +5,20 @@ class RadiationZone extends Bullet {
   damageType = "radiation";
   status = "irradiated";
   statusDuration = 400;
-  colour = [50, 255, 0, 50];
+  colour = col.from(50, 255, 0, 50);
   #timer = 0;
-  #outlineColour = null;
+  #outlineColour = 0;
   checkEntities(){} //Collides with nothing, also makes these surprisingly performant
   init() {
     //No movement here
     this.speed = 0;
-    let outline = this.colour.slice(0);
-    outline[3] ??= 0 //Set alpha to 0 if not present
-    outline[3] += 50;
-    this.#outlineColour = outline;
+    this.#outlineColour = col.addA(this.colour, 50);
     super.init()
   }
   draw() {
     push();
-    fill(this.colour);
-    stroke(this.#outlineColour);
+    col.fill(this.colour);
+    col.stroke(this.#outlineColour);
     strokeWeight(5);
     circle(this.x, this.y, this.damageRange * 2);
     pop();

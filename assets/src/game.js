@@ -18,6 +18,8 @@ const game = {
     this._m = _;
     UIComponent.setCondition("mode:" + _);
   },
+  /** @type {"none"|"adventure"|"boss-rush"|"sandbox"|"endless"} */
+  originalMode: "none",
   /**@type {-1|0|1|2|3|4|5} */
   saveslot: -1,
   music: true,
@@ -36,21 +38,24 @@ const game = {
   //Currency
   shards: 400,
   bloonstones: 0,
+  souls: 0,
+  // progression
   level: 1,
+  zone: 0,
+  world: "",
+  advancements: { progress: new Set(), achievements: new Set(), endings: new Set() },
+  bossweapons: new Set(),
+  won: false,
+  // timers
   bosstimer: 400,
   bossdelay: 400,
   get bossinterval() {
     return world.bossInterval;
   },
   paused: false,
-  //progression
-  world: "",
-  achievements: [],
-  bossweapons: new Set(),
-  won: false,
   //keys
   keybinds: new KeybindHandler(),
-
+  // graphics
   gl: false,
   flashing: true,
   effects: 1,
@@ -85,7 +90,11 @@ const game = {
     return this.increasedLevelSize ? 1920 + 960 : 1920;
   },
 
-  deaths: 0
+  infuse: false,
+
+  deaths: 0,
+  /** Is the game blocked for resource loading? */
+  ___: true,
 };
 /** @type {World} */
 let world;
@@ -112,104 +121,88 @@ function getCanvasDimensions(baseWidth, baseHeight) {
 }
 
 let fonts = {};
-let backgrounds = {
-  grad_normal: null,
-  grad_boss_rush: null,
-  grad_sandbox: null,
-  grad_impossible: null,
-  grad_endless: null,
-};
+let backgrounds = { grad_normal: null, grad_boss_rush: null, grad_sandbox: null, grad_impossible: null, grad_endless: null };
 
-async function preload() {
-  console.log("preloading game...");
-  ImageCTX.commit();
-  await ImageCTX.load();
-  SoundCTX.commit();
-  await SoundCTX.loadAll();
-  fonts.ocr = await loadFont(
-    game.gl ? "assets/font/ocr_a_extended_bold.ttf" : "assets/font/ocr_a_extended.ttf",
-  );
-  fonts.darktech = await loadFont("assets/font/darktech_ldr.ttf");
-}
-//Set up the canvas, using the previous function
 async function setup() {
-  createCanvas(...getCanvasDimensions(baseWidth, baseHeight), game.gl ? WEBGL : undefined);
-  console.log("starting game...");
   try {
-    //Creates background stuff
-    backgrounds.grad_normal = createGraphics(1, 100);
-    for (let y = 0; y < 100; y++) {
-      //For each vertical unit
-      let col = colinterp(
-        [
-          [0, 0, 0],
-          [0, 200, 255],
-        ],
-        y / 100,
-      ); //Get colour interpolation
-      backgrounds.grad_normal.noStroke(); //Remove outline
-      backgrounds.grad_normal.fill(col); //Set fill colour to use
-      backgrounds.grad_normal.rect(0, y, 2, 1); //Draw the rectangle
-    }
-    backgrounds.grad_boss_rush = createGraphics(1, 100);
-    for (let y = 0; y < 100; y++) {
-      //For each vertical unit
-      let col = colinterp(
-        [
-          [0, 0, 0],
-          [50, 0, 100],
-          [200, 0, 255],
-        ],
-        y / 100,
-      ); //you get it by now
-      backgrounds.grad_boss_rush.noStroke();
-      backgrounds.grad_boss_rush.fill(col);
-      backgrounds.grad_boss_rush.rect(0, y, 2, 1);
-    }
-    backgrounds.grad_sandbox = createGraphics(1, 100);
-    for (let y = 0; y < 100; y++) {
-      //For each vertical unit
-      let col = colinterp(
-        [
-          [0, 0, 0],
-          [50, 35, 0],
-          [150, 100, 0],
-          [255, 200, 0],
-        ],
-        y / 100,
-      ); //you get it by now
-      backgrounds.grad_sandbox.noStroke();
-      backgrounds.grad_sandbox.fill(col);
-      backgrounds.grad_sandbox.rect(0, y, 2, 1);
-    }
-    backgrounds.grad_impossible = createGraphics(1, 100);
-    for (let y = 0; y < 100; y++) {
-      //For each vertical unit
-      let col = colinterp(
-        [
-          [0, 0, 0],
-          [0, 0, 0],
-          [64, 0, 0],
-          [128, 0, 0],
-          [255, 0, 0],
-          [255, 128, 0],
-          [255, 255, 0],
-          [255, 255, 255],
-        ],
-        y / 100,
-      ); //you get it by now
-      backgrounds.grad_impossible.noStroke();
-      backgrounds.grad_impossible.fill(col);
-      backgrounds.grad_impossible.rect(0, y, 2, 1);
-    }
-    //p5 options
-    rectMode(CENTER);
-    imageMode(CENTER);
-    textFont(fonts.darktech);
-    textAlign(LEFT, BASELINE);
+    await masetup();
   } catch (e) {
+    console.error(e);
     crash(e);
   }
+}
+
+//Set up the canvas, using the previous function
+async function masetup() {
+  console.log("- Creating loading background...");
+  createCanvas(...getCanvasDimensions(baseWidth, baseHeight), game.gl ? WEBGL : undefined);
+  rectMode(CENTER);
+  imageMode(CENTER);
+  //Creates background stuff
+  backgrounds.grad_normal = createGraphics(1, 100);
+  for (let y = 0; y < 100; y++) {
+    //For each vertical unit
+    let c = col.interp([col.black, col.from(0, 200, 255)], y / 100); //Get colour interpolation
+    backgrounds.grad_normal.noStroke(); //Remove outline
+    col.fillOn(backgrounds.grad_normal, c); //Set fill colour to use
+    backgrounds.grad_normal.rect(0, y, 2, 1); //Draw the rectangle
+  }
+  backgrounds.grad_boss_rush = createGraphics(1, 100);
+  for (let y = 0; y < 100; y++) {
+    //For each vertical unit
+    let c = col.interp([col.black, col.from(50, 0, 100), col.from(200, 0, 255)], y / 100); //you get it by now
+    backgrounds.grad_boss_rush.noStroke();
+    col.fillOn(backgrounds.grad_boss_rush, c);
+    backgrounds.grad_boss_rush.rect(0, y, 2, 1);
+  }
+  backgrounds.grad_sandbox = createGraphics(1, 100);
+  for (let y = 0; y < 100; y++) {
+    //For each vertical unit
+    let c = col.interp([col.black, col.from(50, 35, 0), col.from(150, 100, 0), col.from(255, 200, 0)], y / 100); //you get it by now
+    backgrounds.grad_sandbox.noStroke();
+    col.fillOn(backgrounds.grad_sandbox, c);
+    backgrounds.grad_sandbox.rect(0, y, 2, 1);
+  }
+  backgrounds.grad_impossible = createGraphics(1, 100);
+  for (let y = 0; y < 100; y++) {
+    //For each vertical unit
+    let c = col.interp(
+      [col.black, col.black, col.from(64, 0, 0), col.from(128, 0, 0), col.red, col.from(255, 128, 0), col.red | col.green, col.white],
+      y / 100,
+    ); //you get it by now
+    backgrounds.grad_impossible.noStroke();
+    col.fillOn(backgrounds.grad_impossible, c);
+    backgrounds.grad_impossible.rect(0, y, 2, 1);
+  }
+  console.log(" - Created difficulty backgrounds.");
+
+  console.log("Preloading resources...");
+  ImageCTX.commit();
+  SoundCTX.commit();
+
+  fonts.ocr = await loadFont(game.gl ? "assets/font/ocr_a_extended_bold.ttf" : "assets/font/ocr_a_extended.ttf");
+  fonts.darktech = await loadFont("assets/font/darktech_ldr.ttf");
+
+  textFont(fonts.darktech);
+  textAlign(LEFT, BASELINE);
+  console.log(" - Loaded fonts.");
+
+  await ImageCTX.load();
+  await SoundCTX.loadAll();
+
+  console.log("Filling preload registries...");
+  Registry.infusions.forEach((i, n) => {
+    i.title ??= n;
+    console.debug(` - adding infusion '${n}'`);
+    infusions.add(n, constructFromType(i, WeaponInfusion));
+  });
+  updateSouls();
+  loadInfusions();
+  reloadInfusionsUI();
+  console.log(" - Added weapon infusions.");
+
+  console.log("Starting game...");
+  delete game.___;
 }
 //Change the size if the screen size changes
 function windowResized() {
@@ -223,17 +216,25 @@ function draw() {
     if (game.gl) translate(-width / 2, -height / 2);
 
     scale(contentScale);
-
+    const h = 1080 + (Math.sin(frameCount / 60) + 1) * 100;
     image(
       game.difficulty === "impossible" ? backgrounds.grad_impossible
       : game.mode === "boss-rush" ? backgrounds.grad_boss_rush
       : game.mode === "sandbox" ? backgrounds.grad_sandbox
       : backgrounds.grad_normal,
       960,
-      540,
+      h / 2,
       1920,
-      1080,
+      h,
     );
+    if (game.___) {
+      push();
+      textAlign(CENTER, CENTER);
+      textSize(60);
+      text("Loading, please wait...", 960, 540);
+      pop();
+      return;
+    }
 
     translate(0, 0, 2);
     if (world) {
@@ -266,6 +267,7 @@ function draw() {
 /** To be replaced with other code in devtools console :) */
 function customDrawCode() {}
 
+UIComponent.setCondition("debug:false");
 function uiFrame() {
   //Tick, then draw the UI
   tickUI();
@@ -296,14 +298,9 @@ function drawCursor(x, y) {
       y,
       game.reloadBarTheme === "rainbow" ? rainbowCols
       : game.reloadBarTheme === "mono" ? monoCols
-      : game.reloadBarTheme === "thematic" ?
-        game.player.weaponSlots.map((slot, i) =>
-          slot.weapon && i < 5 ? slot.weapon.themeColour : null,
-        )
+      : game.reloadBarTheme === "thematic" ? game.player.weaponSlots.map((slot, i) => (slot.weapon && i < 5 ? slot.weapon.themeColour : null))
       : null,
-      game.player.weaponSlots.map((slot, i) =>
-        slot.weapon && i < 5 ? slot.weapon._cooldown / slot.weapon.reload : 0,
-      ),
+      game.player.weaponSlots.map((slot, i) => (slot.weapon && i < 5 ? slot.weapon._cooldown / slot.weapon.reload : 0)),
     );
   ImageCTX.draw(ui.waitingForMouseUp ? "ui.cursor-wait" : "ui.cursor", x, y, 64, 64);
 }
@@ -314,17 +311,9 @@ function fakeCursor(x, y) {
     y,
     game.reloadBarTheme === "rainbow" ? rainbowCols
     : game.reloadBarTheme === "mono" ? monoCols
-    : game.reloadBarTheme === "thematic" ?
-      [
-        [255, 0, 0],
-        [0, 255, 255],
-        [0, 255, 0],
-        [200, 0, 255],
-        [0, 0, 255],
-        [255, 128, 0],
-      ]
+    : game.reloadBarTheme === "thematic" ? [col.red, col.green | col.blue, col.green, col.from(200, 0, 255), col.blue, col.from(255, 128, 0)]
     : null,
-    [0, 1, 2, 3, 4].map((i) => 1 - ((frameCount + i * 10) % 60) / 60),
+    [0, 1, 2, 3, 4].map(i => 1 - ((frameCount + i * 10) % 60) / 60),
   );
 
   ImageCTX.draw("ui.cursor", x, y, 64, 64);
@@ -337,7 +326,7 @@ function drawReloadBars(x, y, cols = null, progresses = []) {
     if (prog) {
       if (game.reloadBarStyle === "radial") {
         noFill();
-        stroke(cols[index] ?? [0, 0, 0]);
+        col.stroke(cols[index] ?? col.black);
         strokeWeight(3);
         arc(x, y, size * 2, size * 2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog);
         size += 4;
@@ -346,7 +335,7 @@ function drawReloadBars(x, y, cols = null, progresses = []) {
         noStroke();
         fill(64);
         rect(x + 30, y + size - 48, 60, 5);
-        fill(cols[index] ?? [255, 255, 255]);
+        col.fill(cols[index] ?? col.white);
         rect(x + 30, y + size - 48, 60 * prog, 5);
         size += 8;
       }
@@ -372,7 +361,7 @@ let hadBoss = false;
 function tickBossEvent() {
   UIComponent.setCondition("boss:" + (world.getFirstBoss() ? "yes" : "no")); // Update condition
   if (UIComponent.evaluateCondition("boss:no")) {
-    if(hadBoss) {
+    if (hadBoss) {
       game.levelBig = false;
       world.bossmusic = null;
       if (world.reducedSpawns && game.mode !== "boss-rush") world.reducedSpawns = false;
@@ -394,7 +383,7 @@ function tickBossEvent() {
   } else {
     game.levelBig = !!world.boss.usesLargeLevel;
     hadBoss = true;
-  } 
+  }
 }
 
 function startGame() {
@@ -405,6 +394,7 @@ function startGame() {
     game.bosstimer = 0;
     world.reducedSpawns = true;
   }
+  game.originalMode = game.mode;
 }
 
 function validatePlayerPos() {
@@ -443,7 +433,7 @@ function drawUI() {
   }
   uiEffectTimer.tick();
   toasts.draw();
-  ui.particles.forEach((p) => p && (p.draw() || p.step(1)));
+  ui.particles.forEach(p => p && (p.draw() || p.step(1)));
 }
 
 function tickUI() {
@@ -524,7 +514,7 @@ function debugUI() {
   if (world.entities) {
     let dist = Infinity,
       min = null;
-    world.entities.forEach((ent) => {
+    world.entities.forEach(ent => {
       if (!ent || ent.dead || ent.team === game.player?.team) return;
       let d = ent.lastPos.distanceTo(ui.mouse);
       if (d < dist) {
@@ -538,22 +528,17 @@ function debugUI() {
   push();
   stroke(255, 0, 255);
   noFill();
-  if (world.entities) world.entities.forEach((ent) => ent && circle(ent.x, ent.y, ent.hitSize * 2));
+  if (world.entities) world.entities.forEach(ent => ent && circle(ent.x, ent.y, ent.hitSize * 2));
   stroke(128, 0, 255);
-  if (world.bullets) world.bullets.forEach((blt) => blt && circle(blt.x, blt.y, blt.hitSize * 2));
+  if (world.bullets) world.bullets.forEach(blt => blt && circle(blt.x, blt.y, blt.hitSize * 2));
   stroke(0, 128, 255);
   if (world.bullets)
     world.bullets.forEach(
-      (blt) =>
-        blt &&
-        line(blt.x, blt.y, blt.x + Math.cos(blt.directionRad) * 60 * blt.updates, blt.y) |
-          line(blt.x, blt.y, blt.x, blt.y + Math.sin(blt.directionRad) * 60 * blt.updates) |
-          line(
-            blt.x,
-            blt.y,
-            blt.x + Math.cos(blt.directionRad) * 60 * blt.updates,
-            blt.y + Math.sin(blt.directionRad) * 60 * blt.updates,
-          ),
+      blt =>
+        blt
+        && line(blt.x, blt.y, blt.x + Math.cos(blt.directionRad) * 60 * blt.updates, blt.y)
+          | line(blt.x, blt.y, blt.x, blt.y + Math.sin(blt.directionRad) * 60 * blt.updates)
+          | line(blt.x, blt.y, blt.x + Math.cos(blt.directionRad) * 60 * blt.updates, blt.y + Math.sin(blt.directionRad) * 60 * blt.updates),
     );
   pop();
   colour(200, 200, 255);
@@ -580,22 +565,13 @@ function debugUI() {
 }
 
 function isOffscreen(entity) {
-  return (
-    entity.x < game.borderLeft ||
-    entity.x > game.borderRight ||
-    entity.y < game.borderTop ||
-    entity.y > game.borderBottom
-  );
+  return entity.x < game.borderLeft || entity.x > game.borderRight || entity.y < game.borderTop || entity.y > game.borderBottom;
 }
 
 function distanceOffscreen(entity) {
   return new Vector(
-    entity.x < game.borderLeft - entity.hitSize ?
-      entity.x + entity.hitSize
-    : entity.x + entity.hitSize - game.borderRight,
-    entity.y < game.borderTop - entity.hitSize ?
-      entity.y + entity.hitSize
-    : entity.y + entity.hitSize - game.borderBottom,
+    entity.x < game.borderLeft - entity.hitSize ? entity.x + entity.hitSize : entity.x + entity.hitSize - game.borderRight,
+    entity.y < game.borderTop - entity.hitSize ? entity.y + entity.hitSize : entity.y + entity.hitSize - game.borderBottom,
   ).magnitude;
 }
 
@@ -614,7 +590,7 @@ function nearestOnScreenPosition(pos, onScreenBy = 0) {
 }
 
 function showOffscreenBosses() {
-  world.getAllBosses().forEach((boss) => {
+  world.getAllBosses().forEach(boss => {
     if (boss && isOffscreen(boss)) {
       let circlepos = nearestOnScreenPosition(new Vector(boss.x, boss.y), 180);
       push();
@@ -670,24 +646,20 @@ function createPlayer() {
     }, //This way, I only have to set it once, and it's responsive.
   });
 
-  world.particles.push(
-    new WaveParticle(player.x, player.y, 120, 0, 1920, [255, 0, 0], [255, 0, 0, 0], 100, 0),
-  );
+  world.particles.push(new WaveParticle(player.x, player.y, 120, 0, 1920, [255, 0, 0], [255, 0, 0, 0], 100, 0));
 }
 
 function createSupport() {
   let suppor = construct(Registry.entities.get("support"));
   //Add all slots: not all of them will be accessible
-  suppor.addWeaponSlot(selector2.sp1());
+  suppor.addWeaponSlot(selector2.sp(1));
   suppor.addToWorld(world);
   game.support = suppor;
 
   suppor.upgrade("support-moab");
   suppor.target = game.player;
 
-  world.particles.push(
-    new WaveParticle(suppor.x, suppor.y, 60, 0, 1920, [255, 0, 0], [255, 0, 0, 0], 100, 0),
-  );
+  world.particles.push(new WaveParticle(suppor.x, suppor.y, 60, 0, 1920, [255, 0, 0], [255, 0, 0, 0], 100, 0));
   // console.log("spawned support blimp", game.support);
 }
 
@@ -705,17 +677,16 @@ function checkBoxCollisions() {}
 function playerDies() {
   setTimeout(() => {
     SoundCTX.stop("*");
+    SoundCTX.stopMusic();
     SoundCTX.play("player-death");
   }, 0);
-  deathStats.shardCounter.text = "Shards: " + shortenedNumber(game.shards);
-  deathStats.bloonstoneCounter.text = "Bloonstones: " + shortenedNumber(game.bloonstones);
-  deathStats.progress.text = "Zone: " + world.name + " | Level " + game.level;
-  deathStats.damageDealt.text = "Damage Dealt: " + shortenedNumber(game.player.damageDealt);
-  deathStats.damageTaken.text = "Damage Taken: " + shortenedNumber(game.player.damageTaken);
-  deathStats.destroyedBoxes.text =
-    "Boxes Destroyed: " + shortenedNumber(game.player.destroyed.boxes);
-  deathStats.destroyedBosses.text =
-    "Bosses Destroyed: " + shortenedNumber(game.player.destroyed.bosses);
+  deathStats.shardCounter.text = `Shards: ${shortenedNumber(game.shards)}`;
+  deathStats.bloonstoneCounter.text = `Bloonstones: ${shortenedNumber(game.bloonstones)}`;
+  deathStats.progress.text = `Zone: ${world.name} | Level ${game.level}`;
+  deathStats.damageDealt.text = `Damage Dealt: ${shortenedNumber(game.player.damageDealt)}`;
+  deathStats.damageTaken.text = `Damage Taken: ${shortenedNumber(game.player.damageTaken)}`;
+  deathStats.destroyedBoxes.text = `Boxes Destroyed: ${shortenedNumber(game.player.destroyed.boxes)}`;
+  deathStats.destroyedBosses.text = `Bosses Destroyed: ${shortenedNumber(game.player.destroyed.bosses)}`;
   ui.menuState = "you-died";
   //Reset world and game
   reset();
@@ -724,14 +695,14 @@ function playerDies() {
 function playerWins() {
   setTimeout(() => {
     SoundCTX.stop("*");
+    SoundCTX.stopMusic();
   }, 0);
   winStats.shardCounter.text = "Shards: " + shortenedNumber(game.shards);
   winStats.bloonstoneCounter.text = "Bloonstones: " + shortenedNumber(game.bloonstones);
   winStats.damageDealt.text = "Damage Dealt: " + shortenedNumber(game.player.damageDealt);
   winStats.damageTaken.text = "Damage Taken: " + shortenedNumber(game.player.damageTaken);
   winStats.destroyedBoxes.text = "Boxes Destroyed: " + shortenedNumber(game.player.destroyed.boxes);
-  winStats.destroyedBosses.text =
-    "Bosses Destroyed: " + shortenedNumber(game.player.destroyed.bosses);
+  winStats.destroyedBosses.text = "Bosses Destroyed: " + shortenedNumber(game.player.destroyed.bosses);
   ui.menuState = "you-win";
   //Reset world and game
   reset();
@@ -764,7 +735,9 @@ function reset() {
   // Reset some UI
   UIComponent.setCondition("boss:no");
 
-  //garbage collect player and support
+  // mark for removal from world
+  game.support.dead = game.player.dead = true;
+  // garbage collect player and support
   game.support = null;
   game.player = null;
 }
@@ -779,8 +752,8 @@ function keyPressed(ev) {
 
   if (k === "f3") {
     //Toggle debug mode
-    if (UIComponent.evaluateCondition("debug:true")) UIComponent.setCondition("debug:false");
-    else UIComponent.setCondition("debug:true");
+    if (UIComponent.evaluateCondition("debug:false")) UIComponent.setCondition("debug:true");
+    else UIComponent.setCondition("debug:false");
   }
   if (k === "f12") {
     //devtools
@@ -853,6 +826,7 @@ function saveGame() {
     saveFormatVersion: CURRENT_SAVE_FORMAT_VERSION,
     level: game.level,
     zone: game.world,
+    znidx: game.zone,
     znlvl: world.getBossIndex(),
     difficulty: game.difficulty,
     mode: game.mode,
@@ -860,29 +834,23 @@ function saveGame() {
     shards: game.shards,
     bloonstones: game.bloonstones,
 
-    levels: game.player.weaponSlots.map((x) => x.tier),
-    support: game.support.weaponSlots.map((x) => x.tier),
-    choices: [1, 2, 3, 4, 5].map((s) => +UIComponent.getCondition("ap" + s + "-slot")),
+    levels: game.player.weaponSlots.map(x => x.tier),
+    support: game.support.weaponSlots.map(x => x.tier),
+    choices: ["ap1", "ap2", "ap3", "ap4", "ap5", "sp1"].map(s => +UIComponent.getCondition(s + "-slot")),
     blimp: game.player.blimpName,
 
     health: game.player.health,
     dv: game.player.dv,
     maxDV: game.maxDV,
 
-    destroyed: {
-      boxes: game.player.destroyed.boxes,
-      bosses: game.player.destroyed.bosses,
-    },
-    damage: {
-      dealt: game.player.damageDealt,
-      taken: game.player.damageTaken,
-    },
+    destroyed: { boxes: game.player.destroyed.boxes, bosses: game.player.destroyed.bosses },
+    damage: { dealt: game.player.damageDealt, taken: game.player.damageTaken },
 
     won: game.won,
     bossweapons: [...game.bossweapons],
   };
   Serialiser.set("save." + game.saveslot, save);
-  Serialiser.set("achievements", game.achievements);
+
   notifyEffect("Game saved in slot " + game.saveslot);
   regenSaveDescrs();
 }
@@ -900,6 +868,7 @@ function loadGame(slot) {
   //Progress
   game.bossdelay = 0;
   moveToWorld(save.zone ?? "ocean-skies");
+  game.zone = save.znidx ?? 0;
   world.setBossIndex(save.znlvl ?? 1);
   game.level = save.level ?? 1;
   game.shards = save.shards ?? 400;
@@ -907,9 +876,14 @@ function loadGame(slot) {
   game.maxDV = save.maxDV ?? 0;
   game.player.dv = save.dv ?? 0;
   //Choices
-  [1, 2, 3, 4, 5].forEach((sl, i) => {
-    selector2.chooseAP(sl, (save.choices ?? [1, 1, 1, 1, 1])[i] ?? 1);
-  });
+  save.choices ??= [];
+  selector2.chooseAP(1, save.choices[0] ?? 1);
+  selector2.chooseAP(2, save.choices[1] ?? 1);
+  selector2.chooseAP(3, save.choices[2] ?? 1);
+  selector2.chooseAP(4, save.choices[3] ?? 1);
+  selector2.chooseAP(5, save.choices[4] ?? 1);
+  selector2.chooseSP(1, save.choices[5] ?? 1);
+
   game.player.weaponSlots = [];
   game.player.addWeaponSlot(selector2.ap(1));
   game.player.addWeaponSlot(selector2.ap(2));
@@ -917,11 +891,12 @@ function loadGame(slot) {
   game.player.addWeaponSlot(selector2.ap(4));
   game.player.addWeaponSlot(selector2.ap(5));
   game.player.addWeaponSlot(selector2.booster());
-  for (let sl = 0; sl < 6; sl++) game.player.weaponSlots[sl].setTier((save.levels ?? [])[sl] ?? 0);
+  save.levels ??= [];
+  for (let sl = 0; sl < 6; sl++) game.player.weaponSlots[sl].setTier(save.levels[sl] ?? 0);
 
-  game.support.addWeaponSlot(selector2.sp1());
-  for (let sl = 0; sl < 1; sl++)
-    game.support.weaponSlots[sl].setTier((save.support ?? [])[sl] ?? 0);
+  game.support.weaponSlots = [];
+  game.support.addWeaponSlot(selector2.sp(1));
+  for (let sl = 0; sl < 1; sl++) game.support.weaponSlots[sl].setTier((save.support ?? [])[sl] ?? 0);
   //blomp
   game.player.upgrade(save.blimp ?? "moab");
   game.player.health = save.health ?? game.player.maxHealth ?? 0;
@@ -929,5 +904,101 @@ function loadGame(slot) {
   game.player.destroyed = save.destroyed ?? { bosses: 0, boxes: 0 };
   game.player.damageDealt = save.damage?.dealt ?? 0;
   game.player.damageTaken = save.damage?.taken ?? 0;
-  game.bossweapons = new Set(save.bossweapons ?? []);
+  game.bossweapons = new Set(save.bossweapons);
+}
+
+function addSouls(count = 1) {
+  if (Serialiser.set("souls.count", count + Serialiser.get("souls.count") || count)) game.souls += count;
+  else console.warn("Could not give soul to player");
+
+  if (UIComponent.evaluateCondition("infusion-unlocked:false")) {
+    Serialiser.set("unlocks.infusion", true);
+    UIComponent.setCondition("infusion-unlocked:true");
+    toasts.show("New Feature Unlocked", `Go to the start menu to see it.`, undefined, ToastStyle.achievement);
+  }
+}
+function removeSouls(count = 1) {
+  if (Serialiser.set("souls.count", (+Serialiser.get("souls.count") || 0) - count)) {
+    game.souls -= count;
+    return true;
+  }
+  console.warn("Could not remove soul from player");
+  return false;
+}
+
+function updateSouls() {
+  game.souls = +Serialiser.get("souls.count") || 0;
+  UIComponent.setCondition("infusions-enabled:" + (game.infuse = Serialiser.get("souls.infusions-active") ?? true));
+  UIComponent.setCondition("infusion-unlocked:" + (Serialiser.get("unlocks.infusion") ?? false));
+}
+
+function saveInfusions() {
+  const inf = {};
+  infusions.forEach((i, n) => {
+    if (i.tier) inf[n] = i.tier;
+  });
+  Serialiser.set("souls.infusions", inf);
+}
+function loadInfusions() {
+  const inf = Serialiser.get("souls.infusions");
+  if (inf) {
+    for (const name in inf) {
+      if (infusions.has(name)) {
+        infusions.get(name).tier = inf[name];
+        console.debug(` - loaded infusion '${name}' intended ${inf[name]} actual ${infusions.get(name).tier}`);
+      } else console.warn(` - tried to load unrecognised infusion '${name}'`);
+    }
+  }
+}
+
+function saveAdvancements() {
+  Serialiser.set("advancements.progress", [...game.advancements.progress]);
+  Serialiser.set("advancements.endings", [...game.advancements.endings]);
+  Serialiser.set("advancements.achievements", [...game.advancements.achievements]);
+}
+function loadAdvancements() {
+  game.advancements.progress = new Set(Serialiser.get("advancements.progress") ?? []);
+  game.advancements.achievements = new Set(Serialiser.get("advancements.achievements") ?? []);
+  game.advancements.endings = new Set(Serialiser.get("advancements.endings") ?? []);
+}
+
+/** @type {[from:string,to:string][]} */
+const relocations = [
+  [".achievements.default", null],
+  [".options.default", "options"],
+];
+// move old stuff
+if (ResourceLocation.storageAvailable)
+  for (const [from, to] of relocations) {
+    const data = from.startsWith(".") ? Serialiser.getNT(from.substring(1)) : Serialiser.get(from);
+    if (data !== null) {
+      Serialiser.delete(from);
+      if (to) {
+        Serialiser.set(to, data);
+        console.warn(`Moved data from deprecated location [${from}] to [${to}]`);
+      } else toasts.show("Possible Data Loss", `Data from location [${from}] has been deleted.`, undefined, ToastStyle.error);
+    }
+  }
+
+// update notice!
+if (ResourceLocation.storageAvailable) {
+  const oldver = Serialiser.get("version.game");
+  const pv = Serialiser.get("version.preview");
+  const sfv = Serialiser.get("version.saves");
+  if (oldver !== gameVersion) {
+    Serialiser.set("version.game", gameVersion);
+    Serialiser.set("version.preview", isPreview);
+
+    toasts.show(
+      "Game Updated",
+      `${oldver ?? "(unknown version)"}${pv ? " (preview)" : ""} -> ${gameVersion}${isPreview ? " (preview)" : ""}`,
+      undefined,
+      ToastStyle.progress,
+    );
+  }
+  if (sfv !== null && sfv !== CURRENT_SAVE_FORMAT_VERSION) {
+    Serialiser.set("version.saves", CURRENT_SAVE_FORMAT_VERSION);
+
+    toasts.show("Save Format Changed", `Your saves should automatically be converted - data loss is possible`, undefined, ToastStyle.error);
+  }
 }

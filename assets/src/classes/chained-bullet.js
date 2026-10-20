@@ -51,31 +51,35 @@ class ChainedBullet extends Bullet {
   step(dt) {
     super.step(dt);
     this.#psp += this.pullAccel;
-    let o = Vector.ZERO;
+    let chainedToPos = Vector.ZERO;
     if (this.source) {
-      o = new Vector(this.source.x, this.source.y);
+      chainedToPos = new Vector(this.source.x, this.source.y);
     } else if (this.entity) {
-      o = new Vector(this.entity.x, this.entity.y);
+      chainedToPos = new Vector(this.entity.x, this.entity.y);
     }
-    
+
     let pullvec = this.pos
-        .sub(o)
-        .normalise()
-        .scale(this.#psp * dt);
-    this.pos = this.pos.sub(pullvec);
+      .sub(chainedToPos)
+      .normalise()
+      .scale(this.#psp * dt);
+    if (this._stuckTo) this._stuckTo.pos = this._stuckTo.pos.sub(pullvec);
+    else this.pos = this.pos.sub(pullvec);
 
     if (this.accelOnSource) {
-      let d = this.distanceTo(o.x, o.y);
+      let d = this.distanceTo(chainedToPos.x, chainedToPos.y);
       if (!this.#willAccel && d > this.hitSize + this.#psp) {
         this.#willAccel = true;
       } else if (this.#willAccel && d <= this.hitSize + this.#psp) {
-        this.direction = pullvec.normalise().scale(this.#psp).sub(Vector.fromAngle(this.direction).scale(this.speed)).angle;
+        this.direction = pullvec
+          .normalise()
+          .scale(this.#psp)
+          .sub(Vector.fromAngle(this.direction).scale(this.speed)).angle;
         this.#psp = 0;
-        this.pos = this.pos.add(pullvec)
+        this.pos = this.pos.add(pullvec);
       }
     }
     if (this.despawnOnSource) {
-      let d = this.distanceTo(o.x, o.y);
+      let d = this.distanceTo(chainedToPos.x, chainedToPos.y);
       if (!this.#willDespawn && d > this.hitSize + this.#psp) {
         this.#willDespawn = true;
       } else if (this.#willDespawn && d <= this.hitSize + this.#psp) {
@@ -103,7 +107,7 @@ class ChainedBullet extends Bullet {
   }
   draw() {
     if (this.drawChain && this.source) {
-      let segments = this.distanceTo(this.source.x, this.source.y) / this.chainSegmentSize;
+      let segments = Math.min(this.distanceTo(this.source.x, this.source.y) / this.chainSegmentSize, 200);
       let directionToSource = this.pos.subXY(this.source.x, this.source.y).angleRad;
       for (let seg = 0; seg <= segments; seg++) {
         let pos = this.pos.sub(
@@ -124,7 +128,7 @@ class ChainedBullet extends Bullet {
           );
           pop();
         } else
-          rotatedImg(
+          ImageCTX.draw(
             this.chainImage,
             pos.x,
             pos.y,

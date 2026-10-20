@@ -31,9 +31,20 @@ createUIImageComponent(
   ["weapon-slots"],
   [],
   500,
-  540,
+  500,
   400,
   400,
+  null,
+  "ui.moab",
+  false
+);
+createUIImageComponent(
+  ["weapon-slots"],
+  [],
+  500,
+  875,
+  200,
+  200,
   null,
   "ui.moab",
   false
@@ -113,6 +124,22 @@ createUIComponent(
   false,
   35
 );
+
+createUIComponent(
+  ["weapon-slots"],
+  [],
+  680,
+  875,
+  200,
+  50,
+  "both",
+  () => {
+    UIComponent.setCondition("open-slot:sp1");
+  },
+  "SP1",
+  false,
+  35
+);
 UIComponent.setCondition("open-slot:none"); //Create condition property
 createUIComponent(
   //Background
@@ -123,7 +150,7 @@ createUIComponent(
   750,
   620
 );
-//AP1
+//#region AP1
 UIComponent.setCondition("ap1-slot:none");
 createUIComponent(
   ["weapon-slots"],
@@ -207,7 +234,7 @@ createUIComponent(
   true,
   30
 );
-//AP2
+//#region AP2
 UIComponent.setCondition("ap2-slot:none");
 createUIComponent(
   ["weapon-slots"],
@@ -291,7 +318,7 @@ createUIComponent(
   true,
   30
 );
-//AP3
+//#region AP3
 UIComponent.setCondition("ap3-slot:none");
 createUIComponent(
   ["weapon-slots"],
@@ -376,7 +403,7 @@ createUIComponent(
   30
 );
 
-//AP4
+//#region AP4
 UIComponent.setCondition("ap4-slot:none");
 createUIComponent(
   ["weapon-slots"],
@@ -389,7 +416,7 @@ createUIComponent(
   () => {
     UIComponent.setCondition("ap4-slot:1");
   },
-  "Continuous Laser Beam",
+  "Flamethrower",
   true,
   40
 );
@@ -417,7 +444,7 @@ createUIComponent(
   0,
   "none",
   null,
-  "AP4.1: Continuous Laser Beam",
+  "AP4.1: Flamethrower",
   true,
   40
 );
@@ -430,7 +457,7 @@ createUIComponent(
   0,
   "none",
   null,
-  "Persistent piercing lasers that follow\nthe mouse pointer.\n\nFire rate: Low, but lasts a while\nDamage: High over time\nArea: Very Low\nAim Required: Medium-High\nSupport Value: None",
+  "Wide-range incineration of weaker enemies.\n\nFire rate: Continuous\nDamage: Low initially, high over time\nArea: Wide but short\nAim Required: Low\nSupport Value: Mid",
   true,
   30
 );
@@ -460,7 +487,7 @@ createUIComponent(
   true,
   30
 );
-//AP5
+//#region AP5
 UIComponent.setCondition("ap5-slot:none");
 createUIComponent(
   ["weapon-slots"],
@@ -544,3 +571,88 @@ createUIComponent(
   true,
   30
 );
+//#region SP1
+UIComponent.setCondition("sp1-slot:none");
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1"],
+  1100,
+  330,
+  300,
+  100,
+  "none",
+  () => {
+    UIComponent.setCondition("sp1-slot:1");
+  },
+  "Sustained Shielding",
+  true,
+  45
+);
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1"],
+  1450,
+  330,
+  300,
+  100,
+  "none",
+  () => {
+    UIComponent.setCondition("sp1-slot:2");
+  },
+  "Directed Defense",
+  true,
+  45
+);
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1", "sp1-slot:1"],
+  1275,
+  430,
+  0,
+  0,
+  "none",
+  null,
+  "SP1.1: Sustained Shielding",
+  true,
+  45
+);
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1", "sp1-slot:1"],
+  1275,
+  620,
+  0,
+  0,
+  "none",
+  null,
+  "Barriers which block up to a certain\ntotal amount of damage.\n\nFire rate: Slow\nArea: Large\nAim Required: None\nTiming: Low",
+  true,
+  30
+);
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1", "sp1-slot:2"],
+  1275,
+  430,
+  0,
+  0,
+  "none",
+  null,
+  "SP1.2: Directed Defense",
+  true,
+  45
+);
+createUIComponent(
+  ["weapon-slots"],
+  ["open-slot:sp1", "sp1-slot:2"],
+  1275,
+  620,
+  0,
+  0,
+  "none",
+  null,
+  "Short-lived directional deflections\nwith no maximum damage limit.\n\nFire rate: Medium\nArea: Low but long\nAim Required: Medium-High\nTiming: Medium-High",
+  true,
+  30
+);
+//#endregion

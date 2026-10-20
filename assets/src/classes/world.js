@@ -70,13 +70,8 @@ class World {
       SoundCTX.play(this.ambientSound);
     }
     if (game.music) {
-      if (this.bossmusic) {
-        if (!this.boss) {
-          SoundCTX.swap(this.bossmusic, this.bgm, true);
-        } else {
-          SoundCTX.swap(this.bgm, this.bossmusic, true);
-        }
-      } else SoundCTX.play(this.bgm, true);
+      if (this.bossmusic && this.boss) SoundCTX.setMusic(this.bossmusic);
+      else SoundCTX.setMusic(this.bgm);
     }
   }
   tickAll() {
@@ -126,8 +121,8 @@ class World {
             splashDamageInstance(
               bullet.x,
               bullet.y,
-              instance.amount +
-                (bullet.source ? bullet.source.getDVScale() : 0) +
+              (instance.amount??0) +
+                (instance.dvRatio && bullet.entity ? instance.dvRatio * bullet.entity.dv : 0) +
                 (instance.levelScaling ?? 0) * game.level,
               instance.type,
               instance.area,
@@ -157,18 +152,21 @@ class World {
         SoundCTX.play(bullet.despawnSound);
         //Delete the bullet
         this.bullets.splice(b, 1);
+        b--;
       }
     }
     len = this.bgparticles.length;
     for (let p = 0; p < len; p++) {
       if (this.bgparticles[p]?.remove) {
         this.bgparticles.splice(p, 1);
+        p--;
       }
     }
     len = this.particles.length;
     for (let p = 0; p < len; p++) {
       if (this.particles[p]?.remove) {
         this.particles.splice(p, 1);
+        p--;
       }
     }
     len = this.entities.length;
@@ -177,9 +175,8 @@ class World {
       if (entity?.dead) {
         if (entity === game.player && game.mode === "sandbox") {
           entity.dead = false;
-          game.deaths++;
           toasts.show(
-            `Death #${game.deaths}`,
+            `Death #${++game.deaths}`,
             `Source: ${entity.lastHurtSource?.name ?? "None"}`,
             240,
             ToastStyle.error,
@@ -219,9 +216,9 @@ class World {
                 [255, 0, 0],
                 [255, 0, 0, 0],
                 0,
-                d*2,
+                d * 2,
                 0,
-                d*2,
+                d * 2,
                 0,
                 false,
                 false,
@@ -240,6 +237,7 @@ class World {
         game.maxDV += entity.dv;
         if (entity instanceof Boss && !entity.isMinion) game.totalBosses++;
         this.entities.splice(e, 1);
+        e--;
       }
     }
     //No search algorithms => faster
@@ -265,7 +263,7 @@ class World {
     }
   }
   tickSpawns(dt) {
-    if (this.transitioning) return;
+    if (this.transitioning || this.reducedSpawns) return;
     for (let spawnGroup of this.spawning) {
       if (
         (spawnGroup.imposMode === "when-on" && game.difficulty !== "impossible") ||
@@ -279,7 +277,7 @@ class World {
         ent.y = rnd(game.borderTop, game.borderBottom);
         spawnGroup.$currentCooldown = spawnGroup.interval;
       } else {
-        if (!this.reducedSpawns) spawnGroup.$currentCooldown -= dt;
+        spawnGroup.$currentCooldown -= dt;
       }
     }
   }
@@ -332,8 +330,6 @@ class World {
     UIComponent.setCondition("boss:yes"); //There is, in fact, a boss.
     ent.addToWorld(this); //Add entity
     this.boss = ent;
-    SoundCTX.stop(this.bossmusic);
-    SoundCTX.stop(this.bgm);
     this.bossmusic = ent.bossmusic;
     return ent;
   }

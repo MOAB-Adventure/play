@@ -126,9 +126,9 @@ UIComponent.invert(
 UIComponent.setBackgroundOf(
   UIComponent.setOutlineColour(
     createUIShapeComponent(["in-game"], [], 35, 975, 40, 40, null, "circle", true),
-    [0, 255, 255],
+    col.green | col.blue,
   ),
-  [0, 255, 255, 100],
+  col.from(0, 255, 255, 100),
 );
 
 createUIImageComponent(["in-game"], [], 70, 1035, 80, 80, null, "ui.moab", false);
@@ -148,7 +148,7 @@ UIComponent.invert(
     undefined,
     20,
     () => game.player,
-    [255, 0, 0],
+    col.red,
   ),
 );
 
@@ -172,9 +172,9 @@ UIComponent.invert(
   )
     .setGetters("_cooldown", "reload")
     .setColours(
-      () => (game.support.weaponSlots[0].tier > 1 ? [0, 0, 0] : [100, 0, 0]),
-      [255, 178, 100],
-      [0, 0, 0, 0],
+      () => (game.support.weaponSlots[0].tier > 1 ? col.black : col.from(100, 0, 0)),
+      col.from(255, 178, 100),
+      col.transparent,
     )
     .reverseBarFraction(),
 );
@@ -202,9 +202,9 @@ UIComponent.removeOutline(
     )
       .setGetters("strength", "maxStrength")
       .setColours(
-        () => (game.support.weaponSlots[0].tier > 1 ? [0, 60, 60, 125] : [100, 0, 0]),
-        () => game.player._shield?.trailColourTo ?? [0, 0, 0],
-        () => game.player._shield?.colourTo ?? [0, 0, 0],
+        () => (game.support.weaponSlots[0].tier > 1 ? col.from(0, 60, 60, 125) : col.from(100, 0, 0)),
+        () => game.player._shield?.trailColourTo ?? col.black,
+        () => game.player._shield?.colourTo ?? col.black,
       ),
   ),
 );
@@ -351,10 +351,10 @@ let bhb = UIComponent.invert(
     undefined,
     20,
     () => world.boss,
-    [255, 0, 0],
+    col.red,
   )
     .reverseBarDirection()
-    .setColours(null, () => world.boss?.healthColour ?? [255, 0, 0], null)
+    .setColours(null, () => world.boss?.healthColour ?? col.red, null)
     .setIsHigher(() => world.boss?.higher ?? false),
 );
 UIComponent.invert(
@@ -456,11 +456,11 @@ UIComponent.invert(
     undefined,
     20,
     () => game,
-    [255, 0, 0],
+    col.red,
   )
     .setGetters("bosstimer", "bossinterval")
     .reverseBarDirection()
-    .setColours(null, null, [255, 0, 0]),
+    .setColours(null, null, col.red),
 );
 
 createUIImageComponent(
@@ -522,14 +522,14 @@ Object.defineProperty(
 UIComponent.removeOutline(
   UIComponent.setBackgroundOf(
     createUIComponent(["in-game"], ["upgrade-menu-open:true"], 900, 575, 800, 700),
-    [0, 255, 255, 100],
+    col.from(0, 255, 255, 100),
   ),
 );
 //Vertical line bit
 UIComponent.removeOutline(
   UIComponent.setBackgroundOf(
     createUIComponent(["in-game"], ["upgrade-menu-open:true"], 900, 110, 50, 125),
-    [0, 255, 255, 100],
+    col.from(0, 255, 255, 100),
   ),
 );
 //Open / Close Buttons
@@ -1776,7 +1776,7 @@ UIComponent.setBackgroundOf(
     50,
     "both",
   ),
-  [0, 200, 255],
+  col.from(0, 200, 255),
 );
 UIComponent.setBackgroundOf(
   createUIComponent(
@@ -1788,7 +1788,7 @@ UIComponent.setBackgroundOf(
     50,
     "both",
   ),
-  [255, 70, 0],
+  col.from(255, 70, 0),
 );
 createUIComponent(
   ["in-game"],
@@ -1933,7 +1933,7 @@ createUIComponent(
   "Not reversible!",
   true,
   30,
-).textColour = [255, 197, 0];
+).textColour = col.from(255, 197, 0);
 createUIComponent(
   ["in-game"],
   ["mode:sandbox", "tool:switcher", "min:false"],

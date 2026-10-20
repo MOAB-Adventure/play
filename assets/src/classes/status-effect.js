@@ -7,8 +7,5 @@ class StatusEffect {
   damageMult = 1;
   resistanceMult = 1;
   vfx = "none";
-  vfxChance = 0.2;
-  applyTo(entity, time) {
-    entity.statuses.push({ effect: this, time: time, timeLeft: time });
-  }
+  vfxChance = 1;
 }

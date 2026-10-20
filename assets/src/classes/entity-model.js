@@ -113,12 +113,15 @@ class ModelPart {
   slide = 0;
   image = null;
   shape = "rect";
-  colour = [100, 100, 100];
+  colour = col.mono(100);
   rotate = true;
   absRot = false;
   anchor = "";
   outl = false;
   hidden = false;
+  init() {
+    this.colour = col.convert(this.colour);
+  }
   /**Returns the *relative* position of this part, and its rotation.
    * @param {Model} model The model to draw on.
    * @returns {Orientation} */
@@ -151,9 +154,9 @@ class ModelPart {
       push();
       if (this.outl) {
         strokeWeight(5);
-        stroke(...this.colour);
+        col.stroke(this.colour);
         noFill();
-      } else fill(...this.colour);
+      } else col.fill(this.colour);
       rotatedShape(
         this.shape,
         p.x,

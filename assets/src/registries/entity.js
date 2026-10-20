@@ -49,20 +49,11 @@ Registry.entities.add("metal-box", {
     height: 50,
   },
   hitSize: 25,
-  resistances: [
-    {
-      type: "ballistic",
-      amount: 1, //100% resistance
-    },
-    {
-      type: "laser",
-      amount: 0.3, //30% resistance
-    },
-    {
-      type: "fire",
-      amount: 0.7, //70% resistance
-    },
-  ],
+  resistances: {
+    "ballistic": 1,
+    "laser": 0.3,
+    "fire": 0.7
+  },
   reward: 2,
 
   destroyReward: 10, //Worth more
@@ -84,12 +75,9 @@ Registry.entities.add("hardwood-box", {
   },
   hitSize: 25,
   x: 1920,
-  resistances: [
-    {
-      type: "ballistic",
-      amount: 0.5,
-    },
-  ],
+  resistances: {
+    "ballistic": 0.5
+  },
   //Return a random height each time
   get y() {
     return random(0, 1080);
@@ -113,20 +101,11 @@ Registry.entities.add("robox", {
     height: 50,
   },
   hitSize: 25,
-  resistances: [
-    {
-      type: "ballistic",
-      amount: 0.8,
-    },
-    {
-      type: "laser",
-      amount: 0.5,
-    },
-    {
-      type: "electric",
-      amount: 1,
-    },
-  ],
+  resistances: {
+    "ballistic": 0.8,
+    "laser": 0.5,
+    "electric": 1
+  },
   weaponSlots: [
     {
       posX: 0,
@@ -329,7 +308,7 @@ Registry.entities.add("gigantic-box", {
   health: 200,
   healthIncrease: 200,
   trackingOffsetX: 300,
-  turnWhileMoving: true,
+  faceTarget: true,
   turnSpeed: 10,
   hitSound: "wood-hit",
   deathSound: "boss-death",
@@ -340,51 +319,108 @@ Registry.entities.add("monkey-ace", {
   name: "Monkey Ace",
   drawer: {
     image: "boss.monkey-ace",
-    width: 272,
+    width: 280,
     height: 336,
   },
   imposDrawer: {
     image: "boss.monkey-ace.impos",
-    width: 272,
+    width: 280,
     height: 336,
   },
   hitSize: 136,
   x: 0,
   y: 540,
   reward: 100,
-
-  weaponSlots: [
-    {
-      posX: 0,
-      posY: 0,
-      upgrades: [".ace-radial-gun"],
-      tier: 1,
-    },
-    {
-      posX: 100,
-      posY: 0,
-      upgrades: [".ace-gatling-gun"],
-      tier: 1,
-    },
-    {
-      posX: 0,
-      posY: 0,
-      upgrades: [".ace-radial-gun-impos"],
-      tier: 1,
-    },
-  ],
   actions: {
     fire: {
-      type: "action.fire-weapon",
-      slotIndex: 0,
+      type: "action.fire-bullet",
+      x: 960,
+      y: 540,
+      bullet: {
+        type: "Bullet",
+        lifetime: 80,
+        speed: 30,
+        hitSize: 10,
+        trail: false,
+        damage: [
+          {
+            type: "ballistic",
+            amount: 3,
+            levelScaling: 2,
+          },
+        ],
+        drawer: {
+          image: "bullet.dart",
+          width: 56,
+          height: 35,
+        },
+      },
+      amount: 8,
+      spacing: 45,
     },
     "fire-impos": {
-      type: "action.fire-weapon",
-      slotIndex: 2,
+      type: "action.fire-bullet",
+      bullet: {
+        type: "missile",
+        turnSpeed: 0.75,
+        targetType: "nearest",
+        lifetime: 80,
+        speed: 30,
+        hitSize: 10,
+        trail: true,
+        trailColour: [255, 255, 255],
+        trailColourTo: [255, 0, 0, 0],
+        damage: [
+          {
+            type: "ballistic",
+            amount: 5,
+            levelScaling: 3,
+          },
+        ],
+        drawer: {
+          image: "bullet.dart",
+          width: 56,
+          height: 35,
+        },
+      },
+      amount: 8,
+      spacing: 45,
     },
     gatling: {
-      type: "action.fire-weapon",
-      slotIndex: 1,
+      type: "action.fire-bullet",
+      bullet: {
+        type: "Bullet",
+        lifetime: 120,
+        speed: 30,
+        hitSize: 8,
+        trail: false,
+        damage: [
+          {
+            type: "ballistic",
+            amount: 1.5,
+            levelScaling: 0.75,
+          },
+        ],
+        drawer: {
+          image: "bullet.normal",
+          width: 28,
+          height: 16,
+        },
+        intervalNumber: 1,
+        intervalTime: 9999,
+        intervalBullet: {
+          lifetime: 0,
+          speed: 0,
+          damage: [
+            {
+              area: 60,
+              amount: 0,
+              type: "no",
+            },
+          ],
+        },
+      },
+      spread: 5,
     },
     wait: {
       type: "action.generic",
@@ -392,7 +428,7 @@ Registry.entities.add("monkey-ace", {
     },
     "wait-short": {
       type: "action.generic",
-      duration: 5,
+      duration: 2,
     },
     "wait-less-short": {
       type: "action.generic",
@@ -478,7 +514,8 @@ Registry.entities.add("monkey-ace", {
   health: 100,
   healthIncrease: 150,
   trackingOffsetX: -500, // Try to stay behind blimp
-  turnWhileMoving: true, //Face where it's going
+  faceTarget: true,
+  forceFaceMovementDirection: true, //Face where it's going
   turnSpeed: 2, //planes don't turn very fast
   speed: 12, //but are fast
   hitSound: "metal-hit",
@@ -622,7 +659,7 @@ Registry.entities.add("mini-ace", {
   health: 50,
   healthIncrease: 25,
   trackingOffsetX: -300, // Try to stay behind blimp, but closer
-  turnWhileMoving: true, //Face where it's going
+  faceTarget: true, //Face where it's going
   turnSpeed: 3, //planes don't turn very fast, but small better
   speed: 15, //and are faster
   hitSound: "metal-hit",
@@ -846,7 +883,8 @@ Registry.entities.add("super-monkey", {
   health: 150,
   healthIncrease: 100,
   trackingOffsetX: 0,
-  turnWhileMoving: true,
+  faceTarget: true,
+  forceFaceMovementDirection: true,
   turnSpeed: 4,
   deathSound: "boss-death",
 });
@@ -942,6 +980,7 @@ Registry.entities.add("robo-monkey", {
     },
   },
   bounceable: false,
+  bossmusic: "robo-monkey",
   hitSize: 120,
   direction: 180,
   speed: 10,
@@ -1069,7 +1108,7 @@ Registry.entities.add("robo-monkey", {
             },
           ],
           telegraph: {
-            time: 75,
+            time: 90,
             width: 0,
             createEffect: "laser-charge",
           },
@@ -1089,7 +1128,7 @@ Registry.entities.add("robo-monkey", {
         growth: 10,
         width: 50,
         colourTo: [234, 74, 214, 150],
-        trailColourFrom: [255, 144, 175],
+        trailColour: [255, 144, 175],
         trailColourTo: [121, 0, 255],
       },
     },
@@ -1463,7 +1502,7 @@ Registry.entities.add("robo-monkey", {
   team: "enemy",
   health: 4500,
   trackingOffsetX: 1000,
-  turnWhileMoving: false,
+  faceTarget: false,
   turnSpeed: 4,
   deathSound: "boss-death",
   // destinationWorld: "workshop", //Commented out for win condition
@@ -1473,7 +1512,7 @@ Registry.entities.add("robo-drone", {
   dv: 0,
   isMinion: true,
   name: "Laser Drone",
-  bounceable: false,
+  bounceable: true,
   drawer: {
     image: "minion.drone",
     width: 106,
@@ -1532,7 +1571,7 @@ Registry.entities.add("robo-drone", {
   health: 100,
   trackingOffsetX: 100,
   trackingOffsetY: -500,
-  turnWhileMoving: true,
+  faceTarget: true,
   turnSpeed: 10,
   deathSound: "explosion",
 });

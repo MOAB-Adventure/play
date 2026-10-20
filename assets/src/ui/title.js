@@ -68,7 +68,7 @@ Object.defineProperty(
         : (isPreview ? "Preview Version " : "v") +
           gameVersion + 
           (branchName ? ` (${branchName} Edition)` : "") +
-          (window.location.origin !== "https://lightninglaser8.github.io"
+          (window.location.origin !== "https://moab-adventure.github.io"
             ? " - In Development"
             : "")
       ).substring(0, Math.floor((frameCount ?? 0) / 10)),

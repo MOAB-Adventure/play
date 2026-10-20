@@ -5,7 +5,7 @@ class Blimp {
   name = "MOAB";
   description = "";
   speed = 6;
-  resistances = [];
+  resistances = {};
   drawer = {
     shape: "circle",
     fill: "red",
@@ -40,10 +40,8 @@ class Blimp {
     entity.hitSize = this.hitSize;
     //Make entity know it is this
     entity.blimp = this;
-    //Delete old resistances
-    entity.resistances.splice(0);
-    //Put these resistances in there
-    entity.resistances.push(...this.resistances);
+    //Put these resistances in there, overriding others
+    entity.resistances = Object.assign({}, this.resistances);
     entity.drawer = this.drawer;
     //Set positions
     for (let i = 0; i < entity.weaponSlots.length; i++) {
